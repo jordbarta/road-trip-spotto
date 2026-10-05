@@ -1,89 +1,413 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Road Trip Spotto</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Road Trip Spotto</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --navy:#132238;
+    --ink:#111111;
+    --muted:#647083;
+    --green:#2fb36f;
+    --green-dark:#218653;
+    --yellow:#ffbf24;
+    --yellow-dark:#d99a00;
+    --blue:#2388ff;
+    --blue-dark:#1668c9;
+    --cream:#fffaf0;
+    --paper:#ffffff;
+    --bg:#eef4f8;
+    --line:#dce4ec;
+    --red:#e55353;
+  }
+  body {
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(180deg,#dff1ff 0%,#f4f8fb 46%,#edf4ef 100%);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  button,input { font:inherit; }
+  button { -webkit-tap-highlight-color:transparent; }
+  .app { max-width:600px; margin:0 auto; padding:12px 14px 34px; }
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  /* ---------- LANDING / SETUP ---------- */
+  .setup-shell { min-height:calc(100vh - 46px); display:flex; flex-direction:column; }
+  .brand-card {
+    position:relative; overflow:hidden; background:var(--paper); border-radius:30px;
+    box-shadow:0 12px 35px rgba(30,57,82,.14); border:1px solid rgba(255,255,255,.8);
+  }
+  .brand-art {
+    position:relative; height:235px; overflow:hidden;
+    background:linear-gradient(180deg,#46b9ff 0%,#9de0ff 54%,#cfe9bc 55%,#86bd70 100%);
+  }
+  .sun { position:absolute; width:58px; height:58px; border-radius:50%; background:#ffd45c; right:34px; top:28px; box-shadow:0 0 0 10px rgba(255,212,92,.16); }
+  .cloud { position:absolute; background:white; border-radius:50px; opacity:.9; }
+  .cloud:before,.cloud:after { content:""; position:absolute; background:white; border-radius:50%; }
+  .cloud.one { width:110px;height:25px;left:24px;top:34px; }
+  .cloud.one:before { width:38px;height:38px;left:18px;top:-18px; }
+  .cloud.one:after { width:48px;height:48px;right:16px;top:-24px; }
+  .cloud.two { width:85px;height:20px;right:118px;top:82px;opacity:.75; }
+  .cloud.two:before { width:28px;height:28px;left:15px;top:-14px; }
+  .cloud.two:after { width:34px;height:34px;right:15px;top:-17px; }
+  .mountain { position:absolute; bottom:63px; width:0;height:0;border-left:100px solid transparent;border-right:100px solid transparent;border-bottom:135px solid #7397a5; opacity:.72; }
+  .mountain.m1{left:-50px}.mountain.m2{left:105px;border-bottom-color:#638694}.mountain.m3{right:-50px;border-bottom-color:#7b9b8a}.mountain.m4{right:105px;border-bottom-color:#6c8e82}
+  .road { position:absolute; bottom:-4px; left:50%; transform:translateX(-50%); width:170px;height:142px; background:#4e5963; clip-path:polygon(36% 0,64% 0,100% 100%,0 100%); }
+  .road:after { content:""; position:absolute; left:50%; top:0; width:7px; height:100%; transform:translateX(-50%); background:repeating-linear-gradient(to bottom,#fff 0 18px,transparent 18px 35px); }
+  .car-art { position:absolute; left:50%; bottom:38px; transform:translateX(-50%); font-size:78px; filter:drop-shadow(0 7px 4px rgba(0,0,0,.18)); z-index:3; }
+  .sign { position:absolute; left:24px; bottom:45px; font-size:52px; transform:rotate(-3deg); z-index:3; }
+  .brand-copy { padding:20px 20px 22px; text-align:center; }
+  .brand-title { margin:0; font-size:38px; line-height:.98; font-weight:1000; letter-spacing:-1.5px; text-transform:uppercase; color:var(--navy); }
+  .brand-title span { color:var(--green); }
+  .tagline { margin:10px 0 0; font-size:15px; font-weight:900; letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
+  .primary-button {
+    width:100%; border:0; border-radius:20px; padding:18px 20px; margin-top:16px;
+    background:var(--green); color:white; font-size:23px; font-weight:1000; text-transform:uppercase;
+    box-shadow:0 5px 0 var(--green-dark); cursor:pointer; transition:.12s;
+  }
+  .primary-button:active { transform:translateY(4px); box-shadow:0 1px 0 var(--green-dark); }
+  .secondary-button { width:100%; border:2px solid var(--line); border-radius:17px; padding:14px; margin-top:12px; background:white; color:var(--ink); font-size:17px; font-weight:900; cursor:pointer; }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7f2;
-      color: #17251c;
-      min-height: 100vh;
-    }
+  .setup-header { text-align:center; padding:12px 6px 14px; }
+  .setup-header .mini-logo { font-size:44px; }
+  .setup-header h1 { margin:3px 0 4px; font-size:31px; font-weight:1000; text-transform:uppercase; letter-spacing:-.5px; }
+  .setup-header p { margin:0; color:var(--muted); font-weight:700; }
+  .stepper { display:flex; align-items:center; margin:4px 8px 18px; }
+  .step { width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#dce3ea;color:#6b7682;font-weight:1000;flex:none; }
+  .step.active { background:var(--blue); color:white; box-shadow:0 3px 8px rgba(35,136,255,.25); }
+  .step-line { flex:1;height:4px;background:#dce3ea; }
+  .step-labels { display:grid; grid-template-columns:1fr 1fr 1fr; margin:-12px 0 15px; color:#6b7682; font-size:11px; font-weight:900; text-align:center; text-transform:uppercase; }
 
-    .app {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 24px 18px 40px;
-    }
+  .panel { background:white; border-radius:24px; padding:18px; box-shadow:0 8px 22px rgba(30,57,82,.09); border:1px solid #edf1f5; margin-bottom:14px; }
+  .panel-title { margin:0 0 5px; font-size:23px; font-weight:1000; text-transform:uppercase; }
+  .panel-subtitle { margin:0 0 14px; color:var(--muted); font-size:14px; font-weight:700; }
+  .name-row { display:flex; gap:8px; align-items:stretch; }
+  .name-input { flex:1; min-width:0; border:2px solid var(--line); border-radius:16px; padding:15px 16px; font-size:20px; font-weight:800; outline:none; }
+  .add-player-button { border:0; border-radius:16px; padding:0 16px; background:var(--green); color:white; font-size:15px; font-weight:1000; text-transform:uppercase; box-shadow:0 4px 0 var(--green-dark); cursor:pointer; white-space:nowrap; }
+  .add-player-button:active { transform:translateY(3px); box-shadow:0 1px 0 var(--green-dark); }
+  .name-input:focus { border-color:var(--blue); box-shadow:0 0 0 4px rgba(35,136,255,.10); }
+  .avatar-label { margin:15px 0 8px; font-size:13px; font-weight:1000; color:var(--muted); text-transform:uppercase; }
+  .avatar-picker { display:grid; grid-template-columns:repeat(8,1fr); gap:7px; }
+  .avatar-option { border:2px solid #e4e9ef; background:#f8fafc; border-radius:13px; padding:8px 2px; font-size:25px; cursor:pointer; }
+  .avatar-option.selected { border-color:var(--blue); background:#eaf4ff; box-shadow:0 0 0 2px rgba(35,136,255,.12); }
+  .player-list { display:grid; gap:9px; margin-top:14px; }
+  .player-card { display:flex; align-items:center; gap:12px; background:#f8fafc; border:2px solid #e5ebf1; border-radius:17px; padding:10px 12px; }
+  .player-avatar { width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#fff;border:2px solid #e3e9ef;font-size:28px;flex:none; }
+  .player-name-card { flex:1; font-size:19px; font-weight:1000; text-transform:uppercase; }
+  .remove-player { border:0;background:#edf1f5;color:#66717d;width:34px;height:34px;border-radius:50%;font-size:18px;font-weight:900;cursor:pointer; }
+  .mode-grid { display:grid; gap:10px; }
+  .mode-card { width:100%; text-align:left; border:3px solid var(--line); border-radius:19px; background:#fbfcfd; padding:15px; cursor:pointer; display:flex; gap:13px; align-items:center; }
+  .mode-card.selected { border-color:var(--blue); background:#edf6ff; box-shadow:0 5px 14px rgba(35,136,255,.10); }
+  .mode-icon { font-size:36px; flex:none; }
+  .mode-title { font-size:18px;font-weight:1000;text-transform:uppercase; }
+  .mode-desc { margin-top:3px;font-size:12px;line-height:1.25;color:var(--muted);font-weight:700; }
+  .mode-check { margin-left:auto; width:27px;height:27px;border-radius:50%;border:2px solid #c8d0d9;display:grid;place-items:center;flex:none;font-weight:1000; }
+  .mode-card.selected .mode-check { background:var(--blue);border-color:var(--blue);color:white; }
+  .target-box { margin-top:10px; padding:13px 15px; background:#fff8df; border-radius:16px; text-align:center; }
+  .target-label { font-size:12px;font-weight:1000;color:#75601b;text-transform:uppercase; }
+  #target-score { width:100%; accent-color:var(--blue); margin:10px 0 2px; }
+  #target-score-display { font-size:25px;font-weight:1000;color:var(--navy); }
+  .go-button { margin-top:14px; }
 
-    .hero {
-      text-align: center;
-      padding: 30px 10px;
-    }
+  /* ---------- GAME ---------- */
+  .game-header { text-align:center; padding:8px 4px 13px; }
+  .game-header .emoji { font-size:42px; }
+  .game-header h1 { margin:3px 0 2px; font-size:35px; font-weight:1000; text-transform:uppercase; letter-spacing:-1px; }
+  .game-header p { margin:0; color:var(--muted); font-weight:800; }
+  .scoreboard { background:var(--navy); color:white; border-radius:24px; padding:17px; margin-bottom:15px; box-shadow:0 8px 20px rgba(19,34,56,.16); }
+  .grand-prix { text-align:center;font-size:21px;font-weight:1000;text-transform:uppercase;margin-bottom:14px;letter-spacing:.5px; }
+  .race-row { margin-bottom:13px; }
+  .race-top { display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:1000;margin-bottom:6px; }
+  .race-name { display:flex;align-items:center;gap:6px;text-transform:uppercase; }
+  .race-track { position:relative;height:40px;background:#dfe5df;border-radius:20px;overflow:hidden; }
+  .race-fill { height:100%;background:linear-gradient(90deg,#ffd45c,#ffbf24);border-radius:20px;transition:width .5s ease; }
+  .race-car { position:absolute;top:2px;font-size:29px;line-height:36px;transition:left .5s ease; }
+  .progress-wrap { margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18); }
+  .progress-top { display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:1000;margin-bottom:7px;text-transform:uppercase; }
+  .progress-track { height:15px;background:rgba(255,255,255,.18);border-radius:8px;overflow:hidden; }
+  .progress-fill { height:100%;background:linear-gradient(90deg,#4cd58a,#a7efc7);border-radius:8px;transition:width .55s ease; }
+  .category-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start; }
+  .category { background:white;border-radius:19px;padding:11px;box-shadow:0 4px 12px rgba(30,57,82,.08);border:1px solid #edf1f5; }
+  .category h2 { margin:3px 2px 10px;font-size:17px;line-height:1.1;font-weight:1000;text-transform:uppercase; }
+  .spot-button { width:100%;padding:10px 8px;margin-bottom:6px;border:2px solid transparent;border-radius:12px;background:#f4f7fa;color:var(--ink);font-size:13px;font-weight:1000;text-align:left;cursor:pointer;min-height:45px; }
+  .spot-button:active { transform:scale(.97); }
+  .spot-button.spotted { background:#eef4ef;border-color:#b8c8bc; }
+  .spot-main { display:flex;align-items:center;justify-content:space-between;gap:5px; }
+  .spot-name { display:flex;align-items:center;gap:6px;line-height:1.1;text-transform:uppercase; }
+  .spot-points { font-size:13px;white-space:nowrap;font-weight:1000;color:#1b6d43; }
+  .spotted-by { margin-top:4px;font-size:10px;color:#3f6149;font-weight:900;text-transform:uppercase; }
+  .car-symbol { width:20px;height:20px;border-radius:50%;display:inline-block;flex:none;border:1px solid rgba(0,0,0,.25);vertical-align:middle; }
+  .car-white { background:#fff; }.car-silver { background:#c5cbd1; }.car-grey { background:#8c959f; }.car-black { background:#1b1f24; }
+  .end-button { width:100%;padding:15px;margin-top:15px;border:2px solid #efaaaa;border-radius:15px;background:#fff2f2;color:#b52b27;font-size:17px;font-weight:1000;cursor:pointer;text-transform:uppercase; }
 
-    .hero .emoji {
-      font-size: 64px;
-    }
+  /* ---------- PICK A PLAYER ---------- */
+  .spot-choice-card { background:linear-gradient(135deg,#ffcf4b,#ffb703);border-radius:23px;padding:20px;text-align:center;margin-bottom:14px;box-shadow:0 7px 18px rgba(217,154,0,.18); }
+  .spot-choice-emoji { font-size:48px; }
+  .spot-choice-name { font-size:28px;font-weight:1000;text-transform:uppercase;margin-top:4px; }
+  .spot-choice-points { font-size:18px;font-weight:900;margin-top:4px; }
+  .choose-title { text-align:center;font-size:22px;font-weight:1000;text-transform:uppercase;margin:14px 0 10px; }
+  .player-choice { width:100%;padding:13px;margin-bottom:9px;border:2px solid #e2e8ee;border-radius:17px;background:white;display:flex;align-items:center;gap:12px;text-align:left;box-shadow:0 3px 9px rgba(0,0,0,.07);cursor:pointer; }
+  .player-choice-avatar { width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#f3f7fb;font-size:28px;flex:none; }
+  .player-choice-name { font-size:21px;font-weight:1000;text-transform:uppercase; }
+  .player-choice-pick { margin-left:auto;color:var(--blue);font-weight:1000;text-transform:uppercase;font-size:12px; }
+  .back-button { width:100%;padding:14px;margin-top:3px;border:2px solid #d7dee6;border-radius:15px;background:#f8fafc;color:var(--ink);font-size:17px;font-weight:900;cursor:pointer; }
 
-    h1 {
-      font-size: 42px;
-      margin: 10px 0 8px;
-    }
+  /* ---------- EFFECTS ---------- */
+  #score-pop { position:fixed;left:50%;top:42%;transform:translate(-50%,-50%) scale(.7);z-index:9999;pointer-events:none;opacity:0;font-size:70px;font-weight:1000;text-align:center;color:#ffbf24;text-shadow:0 3px 0 #d99a00,0 5px 14px rgba(0,0,0,.18);white-space:nowrap; }
+  #score-pop.show { animation:scorePop 1400ms cubic-bezier(.2,.8,.2,1) forwards; }
+  .score-pop-big { font-size:88px!important; }.score-pop-rare{font-size:100px!important;text-shadow:0 4px 0 #d99a00,0 7px 18px rgba(0,0,0,.22);}
+  @keyframes scorePop { 0%{opacity:0;transform:translate(-50%,-35%) scale(.55) rotate(-5deg)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(3deg)}35%{opacity:1;transform:translate(-50%,-54%) scale(1.08) rotate(-2deg)}72%{opacity:1;transform:translate(-50%,-66%) scale(1) rotate(0)}100%{opacity:0;transform:translate(-50%,-92%) scale(.92)} }
+  #confetti { position:fixed;inset:0;z-index:9998;pointer-events:none;overflow:hidden; }
+  .confetti-piece{position:absolute;top:-24px;width:10px;height:16px;opacity:0;animation:confettiFall 1600ms ease-out forwards;}
+  @keyframes confettiFall{0%{opacity:1;transform:translate3d(0,-20px,0) rotate(0)}100%{opacity:0;transform:translate3d(var(--drift),105vh,0) rotate(720deg)}}
+  .overtake-pop{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.7);z-index:10000;pointer-events:none;opacity:0;font-size:32px;font-weight:1000;color:white;background:var(--navy);padding:12px 20px;border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,.2);white-space:nowrap;}
+  .overtake-pop.show{animation:overtakePop 1100ms ease-out forwards;}
+  @keyframes overtakePop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}75%{opacity:1;transform:translate(-50%,-56%) scale(1)}100%{opacity:0;transform:translate(-50%,-70%) scale(.95)}}
+  .winner-celebrate{animation:winnerBounce 900ms cubic-bezier(.2,.8,.2,1);}
+  @keyframes winnerBounce{0%{transform:scale(.85);opacity:0}65%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+  .winner-screen{text-align:center;padding:18px 4px 30px;}
+  .winner-trophy{font-size:80px;line-height:1;margin:8px 0 8px;}
+  .winner-title{font-size:37px;font-weight:1000;text-transform:uppercase;margin:0 0 7px;}
+  .winner-sub{color:var(--muted);font-weight:800;margin-bottom:18px;}
+  .final-board{background:var(--navy);color:white;border-radius:23px;padding:15px 18px;text-align:left;}
+  .final-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.16);font-size:19px;font-weight:1000;}
+  .final-row:last-child{border-bottom:0;}
+  .final-name{display:flex;align-items:center;gap:7px;text-transform:uppercase;}
+  .final-score{color:#ffd45c;}
 
-    .subtitle {
-      font-size: 18px;
-      color: #617066;
-    }
-
-    .start-button {
-      display: block;
-      width: 100%;
-      padding: 20px;
-      margin-top: 25px;
-      border: none;
-      border-radius: 18px;
-      background: #ffb703;
-      color: #17251c;
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 5px 0 #d99500;
-    }
-
-    .start-button:active {
-      transform: translateY(4px);
-      box-shadow: 0 1px 0 #d99500;
-    }
-  </style>
+  @media(max-width:430px){
+    .app{padding:9px 10px 25px}.brand-art{height:205px}.brand-title{font-size:34px}.avatar-picker{grid-template-columns:repeat(6,1fr)}
+    .name-row{gap:6px}.add-player-button{padding:0 11px;font-size:13px}
+    .category-grid{gap:8px}.category{padding:9px}.category h2{font-size:15px}.spot-button{font-size:12px;padding:9px 6px}.race-top{font-size:14px}.name-row{gap:6px}.add-player-button{padding:0 12px;font-size:13px}
+  }
+</style>
 </head>
-
 <body>
+<div class="app">
+  <div id="score-pop" aria-live="polite"></div>
+  <div id="confetti" aria-hidden="true"></div>
+  <div id="overtake-pop" class="overtake-pop" aria-live="polite"></div>
 
-  <div class="app">
-
-    <div class="hero">
-      <div class="emoji">🚗💨</div>
-
-      <h1>Road Trip Spotto</h1>
-
-      <div class="subtitle">
-        Who can spot them all?
+  <!-- HOME -->
+  <section id="home-screen" class="setup-shell">
+    <div class="brand-card">
+      <div class="brand-art">
+        <div class="sun"></div><div class="cloud one"></div><div class="cloud two"></div>
+        <div class="mountain m1"></div><div class="mountain m2"></div><div class="mountain m3"></div><div class="mountain m4"></div>
+        <div class="road"></div>
+        <div class="sign">🦘</div>
+        <div class="car-art">🚙</div>
       </div>
+      <div class="brand-copy">
+        <h1 class="brand-title">ROAD TRIP <span>SPOTTO</span></h1>
+        <div class="tagline">FIND IT • TAP IT • SCORE IT</div>
+        <button class="primary-button" onclick="showPlayers()">🏁 START GAME</button>
+      </div>
+    </div>
+  </section>
 
-      <button class="start-button">
-        🚦 Start Spotto
-      </button>
+  <!-- PLAYER SETUP -->
+  <section id="player-screen" style="display:none">
+    <div class="setup-header">
+      <div class="mini-logo">🏁</div>
+      <h1>PLAYER SETUP</h1>
+      <p>Enter your names and pick your racer.</p>
+    </div>
+    <div class="stepper"><div class="step active">1</div><div class="step-line"></div><div class="step">2</div><div class="step-line"></div><div class="step">3</div></div>
+    <div class="step-labels"><span>Players</span><span>Game Type</span><span>Go!</span></div>
+
+    <div class="panel">
+      <h2 class="panel-title">ADD PLAYERS</h2>
+      <p class="panel-subtitle">Choose an emoji so everyone knows their racer.</p>
+      <div class="name-row"><input id="player-name" class="name-input" type="text" placeholder="Player name" autocomplete="off"><button type="button" class="add-player-button" onclick="addPlayer()">ADD PLAYER</button></div>
+      <div class="avatar-label">Choose your emoji</div>
+      <div id="avatar-picker" class="avatar-picker"></div>
+      <div id="players" class="player-list"></div>
     </div>
 
-  </div>
+    <div class="panel">
+      <h2 class="panel-title">GAME TYPE</h2>
+      <p class="panel-subtitle">Pick how you want to play.</p>
+      <div class="mode-grid">
+        <button id="target-mode-button" class="mode-card selected" onclick="selectGameMode('target')">
+          <div class="mode-icon">🏁</div><div><div class="mode-title">RACE TO A TARGET</div><div class="mode-desc">First player to reach the target wins.</div></div><div class="mode-check">✓</div>
+        </button>
+        <div id="target-settings" class="target-box">
+          <div class="target-label">First player to reach</div>
+          <input id="target-score" type="range" min="25" max="250" step="25" value="100" oninput="updateTargetScore()">
+          <div id="target-score-display">100 POINTS</div>
+        </div>
+        <button id="infinite-mode-button" class="mode-card" onclick="selectGameMode('infinite')">
+          <div class="mode-icon">♾️</div><div><div class="mode-title">INFINITE GAME</div><div class="mode-desc">Keep spotting until you decide to stop.</div></div><div class="mode-check"></div>
+        </button>
+      </div>
+    </div>
 
+    <button id="continue-button" class="primary-button go-button" style="display:none" onclick="startGame()">🚗 LET'S GO!</button>
+  </section>
+
+  <!-- GAME -->
+  <section id="game-screen" style="display:none">
+    <div class="game-header"><div class="emoji">🚗💨</div><h1>SPOTTO!</h1><p>SPOT IT. TAP IT. SCORE IT!</p></div>
+    <div id="scoreboard"></div>
+    <div id="spot-categories"></div>
+    <button class="end-button" onclick="confirmEndGame()">🛑 END GAME NOW</button>
+  </section>
+
+  <!-- WINNER -->
+  <section id="winner-screen" class="winner-screen" style="display:none">
+    <div class="winner-trophy">🏆</div>
+    <h1 class="winner-title">WE HAVE A WINNER!</h1>
+    <div id="winner-message"></div>
+    <button class="primary-button" onclick="location.reload()">🔄 NEW GAME</button>
+  </section>
+</div>
+
+<script>
+const players = [];
+let selectedAvatar = "😀";
+let gameMode = "target";
+let targetScore = 100;
+let previousRankings = [];
+let foundSpotCount = 0;
+const totalSpots = 78;
+
+const avatarOptions = ["👑","🥷","🧙","🧚","🐶","🐉","🦊","🐨","🐼","🦁","🐸","🦖","🦄","🤖","👽","😎"];
+
+const spots = [
+  // 🚗 CARS & COLOURS
+  {name:"White car",emoji:"⚪",carClass:"car-white",points:1,spottedBy:[]},
+  {name:"Silver car",emoji:"🔘",carClass:"car-silver",points:1,spottedBy:[]},
+  {name:"Grey car",emoji:"🩶",points:2,spottedBy:[]},
+  {name:"Black car",emoji:"⚫",carClass:"car-black",points:2,spottedBy:[]},
+  {name:"Blue car",emoji:"🔵",points:3,spottedBy:[]},
+  {name:"Red car",emoji:"🔴",points:3,spottedBy:[]},
+  {name:"Green car",emoji:"🟢",points:8,spottedBy:[]},
+  {name:"Yellow car",emoji:"🟡",points:5,spottedBy:[]},
+  {name:"Convertible",emoji:"🚘",points:8,spottedBy:[]},
+  {name:"Sports car",emoji:"🏎️",points:10,spottedBy:[]},
+
+  // 🦘 ANIMALS
+  {name:"Dog",emoji:"🐕",points:1,spottedBy:[]},{name:"Cat",emoji:"🐈",points:1,spottedBy:[]},{name:"Cow",emoji:"🐄",points:2,spottedBy:[]},{name:"Sheep",emoji:"🐑",points:2,spottedBy:[]},{name:"Horse",emoji:"🐎",points:3,spottedBy:[]},{name:"Alpaca",emoji:"🦙",points:5,spottedBy:[]},{name:"Lizard",emoji:"🦎",points:5,spottedBy:[]},{name:"Kangaroo",emoji:"🦘",points:8,spottedBy:[]},{name:"Deer",emoji:"🦌",points:10,spottedBy:[]},{name:"Wallaby",emoji:"🦘",points:15,spottedBy:[]},{name:"Snake",emoji:"🐍",points:15,spottedBy:[]},{name:"Wombat",emoji:"🦫",points:15,spottedBy:[]},{name:"Koala",emoji:"🐨",points:25,spottedBy:[]},{name:"Echidna",emoji:"🦔",points:25,spottedBy:[]},
+
+  // 🐦 BIRDS
+  {name:"Magpie",emoji:"🐦‍⬛",points:1,spottedBy:[]},{name:"Crow",emoji:"🐦‍⬛",points:1,spottedBy:[]},{name:"Ibis",emoji:"🪿",points:2,spottedBy:[]},{name:"Seagull",emoji:"🕊️",points:1,spottedBy:[]},{name:"Cockatoo",emoji:"🦜",points:3,spottedBy:[]},{name:"Duck",emoji:"🦆",points:3,spottedBy:[]},{name:"Galah",emoji:"🦩",points:3,spottedBy:[]},{name:"Rainbow lorikeet",emoji:"🦜",points:5,spottedBy:[]},{name:"Plover",emoji:"🐧",points:5,spottedBy:[]},{name:"Pelican",emoji:"🦢",points:10,spottedBy:[]},{name:"Peacock",emoji:"🦚",points:10,spottedBy:[]},{name:"Eagle",emoji:"🦅",points:15,spottedBy:[]},{name:"Kookaburra",emoji:"🪶",points:15,spottedBy:[]},{name:"Emu",emoji:"🦤",points:20,spottedBy:[]},
+
+  // 🚙 VEHICLES
+  {name:"Bus",emoji:"🚌",points:2,spottedBy:[]},{name:"Caravan",emoji:"🚐",points:2,spottedBy:[]},{name:"Boat",emoji:"🚤",points:3,spottedBy:[]},{name:"Digger",emoji:"🚜",points:5,spottedBy:[]},{name:"Tractor",emoji:"🚜",points:5,spottedBy:[]},{name:"Garbage truck",emoji:"🚛",points:5,spottedBy:[]},{name:"Motorbike",emoji:"🏍️",points:6,spottedBy:[]},{name:"Red truck",emoji:"🚚",points:7,spottedBy:[]},{name:"Police car",emoji:"🚓",points:8,spottedBy:[]},{name:"Ambulance",emoji:"🚑",points:8,spottedBy:[]},{name:"Fire truck",emoji:"🚒",points:8,spottedBy:[]},{name:"Train",emoji:"🚆",points:10,spottedBy:[]},{name:"Aeroplane",emoji:"✈️",points:10,spottedBy:[]},
+
+  // 🏪 SHOPS
+  {name:"Petrol station",emoji:"⛽",points:1,spottedBy:[]},{name:"Cafe",emoji:"☕",points:2,spottedBy:[]},{name:"Woolworths",emoji:"🛒",points:3,spottedBy:[]},{name:"Coles",emoji:"🛒",points:3,spottedBy:[]},{name:"McDonald's",emoji:"🍔",points:5,spottedBy:[]},{name:"KFC",emoji:"🍗",points:5,spottedBy:[]},{name:"Bunnings",emoji:"🔨",points:7,spottedBy:[]},
+
+  // ⚽ SPORT & RECREATION
+  {name:"Playground",emoji:"🛝",points:3,spottedBy:[]},{name:"Tennis court",emoji:"🎾",points:5,spottedBy:[]},{name:"Skate park",emoji:"🛹",points:7,spottedBy:[]},{name:"Golf course",emoji:"⛳",points:8,spottedBy:[]},{name:"Waterslide park",emoji:"🌊",points:15,spottedBy:[]},
+
+  // 🛣️ ROAD & BUILDINGS
+  {name:"School",emoji:"🏫",points:2,spottedBy:[]},{name:"Bridge",emoji:"🌉",points:2,spottedBy:[]},{name:"Roadworks",emoji:"🚧",points:3,spottedBy:[]},{name:"Railway crossing",emoji:"🚂",points:5,spottedBy:[]},{name:"Fire danger sign",emoji:"🔥",points:5,spottedBy:[]},{name:"Hospital",emoji:"🏥",points:5,spottedBy:[]},{name:"Windmill",emoji:"🌬️",points:7,spottedBy:[]},{name:"Silo",emoji:"🏭",points:8,spottedBy:[]},{name:"Pay phone",emoji:"☎️",points:15,spottedBy:[]},{name:"Lighthouse",emoji:"🗼",points:20,spottedBy:[]},
+
+  // 🚩 FLAGS
+  {name:"Australian flag",emoji:"🇦🇺",points:1,spottedBy:[]},{name:"Aboriginal flag",emoji:"🏴",points:5,spottedBy:[]},{name:"State flag",emoji:"🚩",points:5,spottedBy:[]},{name:"Torres Strait Islander flag",emoji:"🏳️",points:8,spottedBy:[]},{name:"Any other country flag",emoji:"🏳️",points:10,spottedBy:[]}
+];
+
+function initSetup(){
+  document.getElementById("avatar-picker").innerHTML = avatarOptions.map((a,i)=>`<button type="button" class="avatar-option ${i===0?"selected":""}" onclick="selectAvatar('${a}',this)">${a}</button>`).join("");
+}
+function showPlayers(){ document.getElementById("home-screen").style.display="none"; document.getElementById("player-screen").style.display="block"; }
+function selectAvatar(avatar,button){ selectedAvatar=avatar; document.querySelectorAll(".avatar-option").forEach(b=>b.classList.remove("selected")); button.classList.add("selected"); }
+function addPlayer(){
+  const input=document.getElementById("player-name"); const name=input.value.trim();
+  if(!name) return;
+  players.push({name:name.charAt(0).toUpperCase()+name.slice(1),score:0,avatar:selectedAvatar});
+  input.value=""; displayPlayers();
+  selectedAvatar="😀"; document.querySelectorAll(".avatar-option").forEach((b,i)=>b.classList.toggle("selected",i===0));
+  input.focus();
+}
+function removePlayer(index){ players.splice(index,1); displayPlayers(); }
+function displayPlayers(){
+  const c=document.getElementById("players");
+  c.innerHTML=players.map((p,i)=>`<div class="player-card"><div class="player-avatar">${p.avatar}</div><div class="player-name-card">${p.name}</div><button class="remove-player" onclick="removePlayer(${i})" aria-label="Remove player">×</button></div>`).join("");
+  document.getElementById("continue-button").style.display=players.length>=2?"block":"none";
+}
+function selectGameMode(mode){
+  gameMode=mode;
+  const target=document.getElementById("target-mode-button"), infinite=document.getElementById("infinite-mode-button"), settings=document.getElementById("target-settings");
+  target.classList.toggle("selected",mode==="target"); infinite.classList.toggle("selected",mode==="infinite"); settings.style.display=mode==="target"?"block":"none";
+}
+function updateTargetScore(){ targetScore=Number(document.getElementById("target-score").value); document.getElementById("target-score-display").textContent=targetScore+" POINTS"; }
+function startGame(){ if(players.length<2) return; document.getElementById("player-screen").style.display="none";document.getElementById("game-screen").style.display="block";displayScoreboard();displaySpots(); }
+
+function displayScoreboard(){
+  const ranked=[...players].sort((a,b)=>b.score-a.score); const highest=Math.max(...players.map(p=>p.score),1);
+  const pct=Math.min(100,(foundSpotCount/totalSpots)*100);
+  const medals=["🥇","🥈","🥉"];
+  document.getElementById("scoreboard").innerHTML=`<div class="scoreboard"><div class="grand-prix">🏁 SPOTTO GRAND PRIX</div>
+    ${ranked.map((p,i)=>{const progress=Math.max(8,(p.score/highest)*100);return `<div class="race-row"><div class="race-top"><span class="race-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span>${p.score} PTS</span></div><div class="race-track"><div class="race-fill" style="width:${progress}%"></div><div class="race-car" style="left:calc(${progress}% - 25px)">🏎️</div></div></div>`}).join("")}
+    <div class="progress-wrap"><div class="progress-top"><span>⭐ SPOTS FOUND</span><span>${foundSpotCount} / ${totalSpots}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+  </div>`;
+  previousRankings=ranked.map(p=>p.name);
+}
+
+const categories=[
+  {name:"🚗 CARS & COLOURS",items:["White car","Silver car","Grey car","Black car","Blue car","Red car","Yellow car","Green car","Convertible","Sports car"]},
+  {name:"🦘 ANIMALS",items:["Dog","Cat","Cow","Sheep","Horse","Alpaca","Lizard","Kangaroo","Deer","Wallaby","Snake","Wombat","Koala","Echidna"]},
+  {name:"🐦 BIRDS",items:["Magpie","Crow","Seagull","Ibis","Cockatoo","Duck","Galah","Rainbow lorikeet","Plover","Pelican","Peacock","Eagle","Kookaburra","Emu"]},
+  {name:"🚙 VEHICLES",items:["Bus","Caravan","Boat","Digger","Tractor","Garbage truck","Motorbike","Red truck","Police car","Ambulance","Fire truck","Train","Aeroplane"]},
+  {name:"🏪 SHOPS",items:["Petrol station","Cafe","Woolworths","Coles","McDonald's","KFC","Bunnings"]},
+  {name:"⚽ SPORT & RECREATION",items:["Playground","Tennis court","Skate park","Golf course","Waterslide park"]},
+  {name:"🛣️ ROAD & BUILDINGS",items:["School","Bridge","Roadworks","Railway crossing","Fire danger sign","Hospital","Windmill","Silo","Pay phone","Lighthouse"]},
+  {name:"🚩 FLAGS",items:["Australian flag","Aboriginal flag","State flag","Torres Strait Islander flag","Any other country flag"]}
+];
+function displaySpots(){
+  const c=document.getElementById("spot-categories");
+  let html='<div class="category-grid">';
+  categories.forEach(cat=>{
+    const list=spots.map((spot,index)=>({spot,index})).filter(x=>cat.items.includes(x.spot.name)); if(!list.length)return;
+    html+=`<div class="category"><h2>${cat.name}</h2>`;
+    list.forEach(({spot,index})=>{
+      const icon=spot.carClass?`<span class="car-symbol ${spot.carClass}"></span>`:spot.emoji;
+      const spotted=spot.spottedBy.length>0;
+      html+=`<button class="spot-button ${spotted?"spotted":""}" onclick="spotItem(${index})"><div class="spot-main"><span class="spot-name">${icon} ${spot.name}</span><span class="spot-points">+${spot.points}</span></div>${spotted?`<div class="spotted-by">👤 ${spot.spottedBy.join(", ")}</div>`:""}</button>`;
+    });
+    html+='</div>';
+  });
+  c.innerHTML=html+'</div>';
+}
+function spotItem(index){
+  const spot=spots[index]; const available=players.filter(p=>!spot.spottedBy.includes(p.name)); if(!available.length)return;
+  const c=document.getElementById("spot-categories");
+  const icon=spot.carClass?`<span class="car-symbol ${spot.carClass}" style="display:inline-block;width:30px;height:30px;vertical-align:middle"></span>`:spot.emoji;
+  c.innerHTML=`<div class="spot-choice-card"><div class="spot-choice-emoji">${icon}</div><div class="spot-choice-name">${spot.name}</div><div class="spot-choice-points">${spot.points} POINT${spot.points===1?"":"S"}</div></div><div class="choose-title">WHO SPOTTED IT?</div>${available.map((p,i)=>`<button class="player-choice" onclick="choosePlayer(${index},${i})"><div class="player-choice-avatar">${p.avatar}</div><div class="player-choice-name">${p.name}</div><div class="player-choice-pick">TAP</div></button>`).join("")}<button class="back-button" onclick="displaySpots()">← BACK TO SPOTTO</button>`;
+}
+
+let audioContext;
+function playTone(frequency,duration,type="sine",volume=.06){try{audioContext=audioContext||new(window.AudioContext||window.webkitAudioContext)();if(audioContext.state==="suspended")audioContext.resume();const o=audioContext.createOscillator(),g=audioContext.createGain();o.type=type;o.frequency.value=frequency;g.gain.setValueAtTime(volume,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);o.connect(g);g.connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+duration);}catch(e){}}
+function playSpotSound(points){if(points>=20){playTone(523,.12,"triangle",.08);setTimeout(()=>playTone(659,.12,"triangle",.08),100);setTimeout(()=>playTone(784,.18,"triangle",.08),200);}else if(points>=15){playTone(523,.12,"triangle",.07);setTimeout(()=>playTone(659,.16,"triangle",.07),110);}else{playTone(520+Math.min(points,10)*25,.12,"sine",.055);}}
+function playWinSound(){playTone(523,.15,"triangle",.08);setTimeout(()=>playTone(659,.15,"triangle",.08),120);setTimeout(()=>playTone(784,.15,"triangle",.08),240);setTimeout(()=>playTone(1047,.3,"triangle",.09),360);}
+function showOvertake(name){const p=document.getElementById("overtake-pop");p.textContent="🏎️ "+name+" OVERTAKES!";p.classList.remove("show");void p.offsetWidth;p.classList.add("show");playTone(740,.08,"square",.045);setTimeout(()=>playTone(988,.12,"square",.045),90);setTimeout(()=>p.classList.remove("show"),1150);}
+function showScorePop(points,name){const p=document.getElementById("score-pop");p.textContent="+"+points+" 🎉";p.classList.remove("show","score-pop-big","score-pop-rare");if(points>=15)p.classList.add("score-pop-big");if(points>=20)p.classList.add("score-pop-rare");void p.offsetWidth;p.classList.add("show");playSpotSound(points);setTimeout(()=>p.classList.remove("show","score-pop-big","score-pop-rare"),1450);}
+function launchConfetti(){const c=document.getElementById("confetti");c.innerHTML="";for(let i=0;i<80;i++){const piece=document.createElement("div");piece.className="confetti-piece";piece.style.left=Math.random()*100+"%";piece.style.background=["#ffbf24","#2fb36f","#ff6b6b","#4dabf7","#b197fc","#ffffff"][Math.floor(Math.random()*6)];piece.style.setProperty("--drift",Math.random()*220-110+"px");piece.style.animationDelay=Math.random()*350+"ms";c.appendChild(piece);}setTimeout(()=>c.innerHTML="",2300);}
+
+function choosePlayer(spotIndex,playerIndex){
+  const spot=spots[spotIndex];const available=players.filter(p=>!spot.spottedBy.includes(p.name));const player=available[playerIndex];if(!player)return;
+  const wasUnfound=spot.spottedBy.length===0;
+  player.score+=spot.points;spot.spottedBy.push(player.name);if(wasUnfound)foundSpotCount++;
+  showScorePop(spot.points,player.name);
+  if(gameMode==="target"&&player.score>=targetScore){finishGame(player);return;}
+  if(spot.spottedBy.length===players.length)spots.splice(spotIndex,1);
+  const oldRank=[...previousRankings];displayScoreboard();displaySpots();const newRank=previousRankings.indexOf(player.name);const old=oldRank.indexOf(player.name);if(old!==-1&&newRank!==-1&&newRank<old)setTimeout(()=>showOvertake(player.name),180);
+}
+function finishGame(winner){
+  document.getElementById("game-screen").style.display="none";document.getElementById("winner-screen").style.display="block";
+  const ranked=[...players].sort((a,b)=>b.score-a.score),medals=["🥇","🥈","🥉"],wm=document.getElementById("winner-message");
+  wm.classList.remove("winner-celebrate");void wm.offsetWidth;wm.classList.add("winner-celebrate");
+  wm.innerHTML=`<div class="winner-title">${winner.name} WINS!</div><div class="winner-sub">${winner.score} POINTS<br>THE FINISH LINE HAS BEEN CROSSED!</div><div class="final-board">${ranked.map((p,i)=>`<div class="final-row"><span class="final-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span class="final-score">${p.score} PTS</span></div>`).join("")}</div>`;
+  launchConfetti();playWinSound();
+}
+function confirmEndGame(){if(!confirm("🏁 End race?\n\nAre you sure you want to finish this race?"))return;const winner=[...players].sort((a,b)=>b.score-a.score)[0];finishGame(winner);}
+
+initSetup();
+</script>
 </body>
 </html>
