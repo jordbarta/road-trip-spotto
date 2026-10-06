@@ -83,10 +83,7 @@
   .panel { background:white; border-radius:24px; padding:18px; box-shadow:0 8px 22px rgba(30,57,82,.09); border:1px solid #edf1f5; margin-bottom:14px; }
   .panel-title { margin:0 0 5px; font-size:23px; font-weight:1000; text-transform:uppercase; }
   .panel-subtitle { margin:0 0 14px; color:var(--muted); font-size:14px; font-weight:700; }
-  .name-row { display:flex; gap:8px; align-items:stretch; }
-  .name-input { flex:1; min-width:0; border:2px solid var(--line); border-radius:16px; padding:15px 16px; font-size:20px; font-weight:800; outline:none; }
-  .add-player-button { border:0; border-radius:16px; padding:0 16px; background:var(--green); color:white; font-size:15px; font-weight:1000; text-transform:uppercase; box-shadow:0 4px 0 var(--green-dark); cursor:pointer; white-space:nowrap; }
-  .add-player-button:active { transform:translateY(3px); box-shadow:0 1px 0 var(--green-dark); }
+  .name-input { width:100%; border:2px solid var(--line); border-radius:16px; padding:15px 16px; font-size:20px; font-weight:800; outline:none; }
   .name-input:focus { border-color:var(--blue); box-shadow:0 0 0 4px rgba(35,136,255,.10); }
   .avatar-label { margin:15px 0 8px; font-size:13px; font-weight:1000; color:var(--muted); text-transform:uppercase; }
   .avatar-picker { display:grid; grid-template-columns:repeat(8,1fr); gap:7px; }
@@ -179,9 +176,20 @@
 
   @media(max-width:430px){
     .app{padding:9px 10px 25px}.brand-art{height:205px}.brand-title{font-size:34px}.avatar-picker{grid-template-columns:repeat(6,1fr)}
-    .name-row{gap:6px}.add-player-button{padding:0 11px;font-size:13px}
-    .category-grid{gap:8px}.category{padding:9px}.category h2{font-size:15px}.spot-button{font-size:12px;padding:9px 6px}.race-top{font-size:14px}.name-row{gap:6px}.add-player-button{padding:0 12px;font-size:13px}
+    .category-grid{gap:8px}.category{padding:9px}.category h2{font-size:15px}.spot-button{font-size:12px;padding:9px 6px}.race-top{font-size:14px}
   }
+
+  /* ---------- V4 CATEGORY SETUP ---------- */
+  .category-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+  .category-choice{width:100%;border:2px solid var(--line);border-radius:15px;background:#f8fafc;padding:12px 10px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:9px}
+  .category-choice.selected{border-color:var(--green);background:#effaf4;box-shadow:0 3px 9px rgba(47,179,111,.12)}
+  .category-choice-icon{font-size:25px;flex:none}.category-choice-text{min-width:0}.category-choice-name{font-size:12px;font-weight:1000;text-transform:uppercase;line-height:1.08}.category-choice-count{font-size:11px;color:var(--muted);font-weight:800;margin-top:3px}.category-choice-check{margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid #c8d0d9;display:grid;place-items:center;flex:none;font-size:13px}.category-choice.selected .category-choice-check{background:var(--green);border-color:var(--green);color:white}
+  .category-actions{display:flex;gap:8px;margin-top:10px}.category-action{flex:1;border:2px solid var(--line);border-radius:14px;background:white;padding:11px 8px;font-size:13px;font-weight:1000;cursor:pointer}.category-action.primary{background:var(--navy);color:white;border-color:var(--navy)}
+  .selected-count{margin-top:12px;background:var(--navy);color:white;border-radius:17px;padding:14px;text-align:center;font-size:18px;font-weight:1000}.selected-count small{display:block;font-size:11px;opacity:.72;margin-top:3px;text-transform:uppercase}
+  .resume-panel{background:#fff8df;border:2px solid #f1d77d}.resume-stats{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:900;margin-top:8px}.resume-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.resume-buttons button{margin-top:12px}
+  .setup-note{font-size:12px;color:var(--muted);font-weight:700;margin-top:8px;line-height:1.35}
+  @media(max-width:430px){.category-choice-grid{gap:7px}.category-choice{padding:10px 7px}.category-choice-name{font-size:11px}.category-choice-icon{font-size:22px}}
+
 </style>
 </head>
 <body>
@@ -206,25 +214,34 @@
         <button class="primary-button" onclick="showPlayers()">🏁 START GAME</button>
       </div>
     </div>
+    <div id="resume-panel" class="panel resume-panel" style="display:none">
+      <h2 class="panel-title">🏁 GAME IN PROGRESS</h2>
+      <p class="panel-subtitle">You can pick up where you left off.</p>
+      <div id="resume-summary"></div>
+      <div class="resume-buttons"><button class="primary-button" onclick="resumeGame()">▶️ RESUME GAME</button><button class="secondary-button" onclick="discardSavedGame()">🗑️ NEW GAME</button></div>
+    </div>
   </section>
+
 
   <!-- PLAYER SETUP -->
   <section id="player-screen" style="display:none">
     <div class="setup-header">
       <div class="mini-logo">🏁</div>
       <h1>PLAYER SETUP</h1>
-      <p>Enter your names and pick your racer.</p>
+      <p>Enter your names and pick your racers.</p>
     </div>
     <div class="stepper"><div class="step active">1</div><div class="step-line"></div><div class="step">2</div><div class="step-line"></div><div class="step">3</div></div>
-    <div class="step-labels"><span>Players</span><span>Game Type</span><span>Go!</span></div>
+    <div class="step-labels"><span>Players</span><span>Categories</span><span>Go!</span></div>
 
     <div class="panel">
       <h2 class="panel-title">ADD PLAYERS</h2>
       <p class="panel-subtitle">Choose an emoji so everyone knows their racer.</p>
-      <div class="name-row"><input id="player-name" class="name-input" type="text" placeholder="Player name" autocomplete="off"><button type="button" class="add-player-button" onclick="addPlayer()">ADD PLAYER</button></div>
+      <input id="player-name" class="name-input" type="text" placeholder="Player name" autocomplete="off">
       <div class="avatar-label">Choose your emoji</div>
       <div id="avatar-picker" class="avatar-picker"></div>
+      <button class="primary-button" onclick="addPlayer()">➕ ADD PLAYER</button>
       <div id="players" class="player-list"></div>
+      <div class="setup-note">Solo game? Just add one player. 🏁</div>
     </div>
 
     <div class="panel">
@@ -243,6 +260,24 @@
           <div class="mode-icon">♾️</div><div><div class="mode-title">INFINITE GAME</div><div class="mode-desc">Keep spotting until you decide to stop.</div></div><div class="mode-check"></div>
         </button>
       </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">CHOOSE CATEGORIES</h2>
+      <p class="panel-subtitle">Easy picks the core game. Custom lets you build your own Spotto.</p>
+      <div class="mode-grid">
+        <button id="easy-category-button" class="mode-card selected" onclick="selectCategoryMode('easy')">
+          <div class="mode-icon">⭐</div><div><div class="mode-title">EASY</div><div class="mode-desc">Cars, animals, vehicles and signs.</div></div><div class="mode-check">✓</div>
+        </button>
+        <button id="custom-category-button" class="mode-card" onclick="selectCategoryMode('custom')">
+          <div class="mode-icon">🎯</div><div><div class="mode-title">CUSTOM</div><div class="mode-desc">Choose exactly which categories you want.</div></div><div class="mode-check"></div>
+        </button>
+      </div>
+      <div id="custom-category-settings" style="display:none">
+        <div class="category-actions"><button class="category-action primary" onclick="selectAllCategories()">☑️ SELECT ALL</button><button class="category-action" onclick="selectEasyCategories()">⭐ EASY SET</button></div>
+        <div id="category-choice-grid" class="category-choice-grid"></div>
+      </div>
+      <div id="selected-count" class="selected-count">📋 0 ITEMS SELECTED<small>Ready to play</small></div>
     </div>
 
     <button id="continue-button" class="primary-button go-button" style="display:none" onclick="startGame()">🚗 LET'S GO!</button>
@@ -266,120 +301,90 @@
 </div>
 
 <script>
-const players = [];
-let selectedAvatar = "😀";
-let gameMode = "target";
-let targetScore = 100;
-let previousRankings = [];
-let foundSpotCount = 0;
-const totalSpots = 78;
 
-const avatarOptions = ["👑","🥷","🧙","🧚","🐶","🐉","🦊","🐨","🐼","🦁","🐸","🦖","🦄","🤖","👽","😎"];
+const players=[];
+let selectedAvatar="😀";
+let gameMode="target";
+let targetScore=100;
+let previousRankings=[];
+let foundSpotCount=0;
+let categoryMode="easy";
+let selectedCategories=[];
+let spots=[];
+let gameStarted=false;
+const SAVE_KEY="roadTripSpottoV4Save";
 
-const spots = [
-  // 🚗 CARS & COLOURS
-  {name:"White car",emoji:"⚪",carClass:"car-white",points:1,spottedBy:[]},
-  {name:"Silver car",emoji:"🔘",carClass:"car-silver",points:1,spottedBy:[]},
-  {name:"Grey car",emoji:"🩶",points:2,spottedBy:[]},
-  {name:"Black car",emoji:"⚫",carClass:"car-black",points:2,spottedBy:[]},
-  {name:"Blue car",emoji:"🔵",points:3,spottedBy:[]},
-  {name:"Red car",emoji:"🔴",points:3,spottedBy:[]},
-  {name:"Green car",emoji:"🟢",points:8,spottedBy:[]},
-  {name:"Yellow car",emoji:"🟡",points:5,spottedBy:[]},
-  {name:"Convertible",emoji:"🚘",points:8,spottedBy:[]},
-  {name:"Sports car",emoji:"🏎️",points:10,spottedBy:[]},
-
-  // 🦘 ANIMALS
-  {name:"Dog",emoji:"🐕",points:1,spottedBy:[]},{name:"Cat",emoji:"🐈",points:1,spottedBy:[]},{name:"Cow",emoji:"🐄",points:2,spottedBy:[]},{name:"Sheep",emoji:"🐑",points:2,spottedBy:[]},{name:"Horse",emoji:"🐎",points:3,spottedBy:[]},{name:"Alpaca",emoji:"🦙",points:5,spottedBy:[]},{name:"Lizard",emoji:"🦎",points:5,spottedBy:[]},{name:"Kangaroo",emoji:"🦘",points:8,spottedBy:[]},{name:"Deer",emoji:"🦌",points:10,spottedBy:[]},{name:"Wallaby",emoji:"🦘",points:15,spottedBy:[]},{name:"Snake",emoji:"🐍",points:15,spottedBy:[]},{name:"Wombat",emoji:"🦫",points:15,spottedBy:[]},{name:"Koala",emoji:"🐨",points:25,spottedBy:[]},{name:"Echidna",emoji:"🦔",points:25,spottedBy:[]},
-
-  // 🐦 BIRDS
-  {name:"Magpie",emoji:"🐦‍⬛",points:1,spottedBy:[]},{name:"Crow",emoji:"🐦‍⬛",points:1,spottedBy:[]},{name:"Ibis",emoji:"🪿",points:2,spottedBy:[]},{name:"Seagull",emoji:"🕊️",points:1,spottedBy:[]},{name:"Cockatoo",emoji:"🦜",points:3,spottedBy:[]},{name:"Duck",emoji:"🦆",points:3,spottedBy:[]},{name:"Galah",emoji:"🦩",points:3,spottedBy:[]},{name:"Rainbow lorikeet",emoji:"🦜",points:5,spottedBy:[]},{name:"Plover",emoji:"🐧",points:5,spottedBy:[]},{name:"Pelican",emoji:"🦢",points:10,spottedBy:[]},{name:"Peacock",emoji:"🦚",points:10,spottedBy:[]},{name:"Eagle",emoji:"🦅",points:15,spottedBy:[]},{name:"Kookaburra",emoji:"🪶",points:15,spottedBy:[]},{name:"Emu",emoji:"🦤",points:20,spottedBy:[]},
-
-  // 🚙 VEHICLES
-  {name:"Bus",emoji:"🚌",points:2,spottedBy:[]},{name:"Caravan",emoji:"🚐",points:2,spottedBy:[]},{name:"Boat",emoji:"🚤",points:3,spottedBy:[]},{name:"Digger",emoji:"🚜",points:5,spottedBy:[]},{name:"Tractor",emoji:"🚜",points:5,spottedBy:[]},{name:"Garbage truck",emoji:"🚛",points:5,spottedBy:[]},{name:"Motorbike",emoji:"🏍️",points:6,spottedBy:[]},{name:"Red truck",emoji:"🚚",points:7,spottedBy:[]},{name:"Police car",emoji:"🚓",points:8,spottedBy:[]},{name:"Ambulance",emoji:"🚑",points:8,spottedBy:[]},{name:"Fire truck",emoji:"🚒",points:8,spottedBy:[]},{name:"Train",emoji:"🚆",points:10,spottedBy:[]},{name:"Aeroplane",emoji:"✈️",points:10,spottedBy:[]},
-
-  // 🏪 SHOPS
-  {name:"Petrol station",emoji:"⛽",points:1,spottedBy:[]},{name:"Cafe",emoji:"☕",points:2,spottedBy:[]},{name:"Woolworths",emoji:"🛒",points:3,spottedBy:[]},{name:"Coles",emoji:"🛒",points:3,spottedBy:[]},{name:"McDonald's",emoji:"🍔",points:5,spottedBy:[]},{name:"KFC",emoji:"🍗",points:5,spottedBy:[]},{name:"Bunnings",emoji:"🔨",points:7,spottedBy:[]},
-
-  // ⚽ SPORT & RECREATION
-  {name:"Playground",emoji:"🛝",points:3,spottedBy:[]},{name:"Tennis court",emoji:"🎾",points:5,spottedBy:[]},{name:"Skate park",emoji:"🛹",points:7,spottedBy:[]},{name:"Golf course",emoji:"⛳",points:8,spottedBy:[]},{name:"Waterslide park",emoji:"🌊",points:15,spottedBy:[]},
-
-  // 🛣️ ROAD & BUILDINGS
-  {name:"School",emoji:"🏫",points:2,spottedBy:[]},{name:"Bridge",emoji:"🌉",points:2,spottedBy:[]},{name:"Roadworks",emoji:"🚧",points:3,spottedBy:[]},{name:"Railway crossing",emoji:"🚂",points:5,spottedBy:[]},{name:"Fire danger sign",emoji:"🔥",points:5,spottedBy:[]},{name:"Hospital",emoji:"🏥",points:5,spottedBy:[]},{name:"Windmill",emoji:"🌬️",points:7,spottedBy:[]},{name:"Silo",emoji:"🏭",points:8,spottedBy:[]},{name:"Pay phone",emoji:"☎️",points:15,spottedBy:[]},{name:"Lighthouse",emoji:"🗼",points:20,spottedBy:[]},
-
-  // 🚩 FLAGS
-  {name:"Australian flag",emoji:"🇦🇺",points:1,spottedBy:[]},{name:"Aboriginal flag",emoji:"🏴",points:5,spottedBy:[]},{name:"State flag",emoji:"🚩",points:5,spottedBy:[]},{name:"Torres Strait Islander flag",emoji:"🏳️",points:8,spottedBy:[]},{name:"Any other country flag",emoji:"🏳️",points:10,spottedBy:[]}
-];
-
-function initSetup(){
-  document.getElementById("avatar-picker").innerHTML = avatarOptions.map((a,i)=>`<button type="button" class="avatar-option ${i===0?"selected":""}" onclick="selectAvatar('${a}',this)">${a}</button>`).join("");
-}
-function showPlayers(){ document.getElementById("home-screen").style.display="none"; document.getElementById("player-screen").style.display="block"; }
-function selectAvatar(avatar,button){ selectedAvatar=avatar; document.querySelectorAll(".avatar-option").forEach(b=>b.classList.remove("selected")); button.classList.add("selected"); }
-function addPlayer(){
-  const input=document.getElementById("player-name"); const name=input.value.trim();
-  if(!name) return;
-  players.push({name:name.charAt(0).toUpperCase()+name.slice(1),score:0,avatar:selectedAvatar});
-  input.value=""; displayPlayers();
-  selectedAvatar="😀"; document.querySelectorAll(".avatar-option").forEach((b,i)=>b.classList.toggle("selected",i===0));
-  input.focus();
-}
-function removePlayer(index){ players.splice(index,1); displayPlayers(); }
-function displayPlayers(){
-  const c=document.getElementById("players");
-  c.innerHTML=players.map((p,i)=>`<div class="player-card"><div class="player-avatar">${p.avatar}</div><div class="player-name-card">${p.name}</div><button class="remove-player" onclick="removePlayer(${i})" aria-label="Remove player">×</button></div>`).join("");
-  document.getElementById("continue-button").style.display=players.length>=2?"block":"none";
-}
-function selectGameMode(mode){
-  gameMode=mode;
-  const target=document.getElementById("target-mode-button"), infinite=document.getElementById("infinite-mode-button"), settings=document.getElementById("target-settings");
-  target.classList.toggle("selected",mode==="target"); infinite.classList.toggle("selected",mode==="infinite"); settings.style.display=mode==="target"?"block":"none";
-}
-function updateTargetScore(){ targetScore=Number(document.getElementById("target-score").value); document.getElementById("target-score-display").textContent=targetScore+" POINTS"; }
-function startGame(){ if(players.length<2) return; document.getElementById("player-screen").style.display="none";document.getElementById("game-screen").style.display="block";displayScoreboard();displaySpots(); }
-
-function displayScoreboard(){
-  const ranked=[...players].sort((a,b)=>b.score-a.score); const highest=Math.max(...players.map(p=>p.score),1);
-  const pct=Math.min(100,(foundSpotCount/totalSpots)*100);
-  const medals=["🥇","🥈","🥉"];
-  document.getElementById("scoreboard").innerHTML=`<div class="scoreboard"><div class="grand-prix">🏁 SPOTTO GRAND PRIX</div>
-    ${ranked.map((p,i)=>{const progress=Math.max(8,(p.score/highest)*100);return `<div class="race-row"><div class="race-top"><span class="race-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span>${p.score} PTS</span></div><div class="race-track"><div class="race-fill" style="width:${progress}%"></div><div class="race-car" style="left:calc(${progress}% - 25px)">🏎️</div></div></div>`}).join("")}
-    <div class="progress-wrap"><div class="progress-top"><span>⭐ SPOTS FOUND</span><span>${foundSpotCount} / ${totalSpots}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></div>
-  </div>`;
-  previousRankings=ranked.map(p=>p.name);
-}
+const avatarOptions=["👑","🥷","🧙","🧚","🐶","🐉","🦊","🐨","🐼","🦁","🐸","🦖","🦄","🤖","👽","😎"];
 
 const categories=[
-  {name:"🚗 CARS & COLOURS",items:["White car","Silver car","Grey car","Black car","Blue car","Red car","Yellow car","Green car","Convertible","Sports car"]},
-  {name:"🦘 ANIMALS",items:["Dog","Cat","Cow","Sheep","Horse","Alpaca","Lizard","Kangaroo","Deer","Wallaby","Snake","Wombat","Koala","Echidna"]},
-  {name:"🐦 BIRDS",items:["Magpie","Crow","Seagull","Ibis","Cockatoo","Duck","Galah","Rainbow lorikeet","Plover","Pelican","Peacock","Eagle","Kookaburra","Emu"]},
-  {name:"🚙 VEHICLES",items:["Bus","Caravan","Boat","Digger","Tractor","Garbage truck","Motorbike","Red truck","Police car","Ambulance","Fire truck","Train","Aeroplane"]},
-  {name:"🏪 SHOPS",items:["Petrol station","Cafe","Woolworths","Coles","McDonald's","KFC","Bunnings"]},
-  {name:"⚽ SPORT & RECREATION",items:["Playground","Tennis court","Skate park","Golf course","Waterslide park"]},
-  {name:"🛣️ ROAD & BUILDINGS",items:["School","Bridge","Roadworks","Railway crossing","Fire danger sign","Hospital","Windmill","Silo","Pay phone","Lighthouse"]},
-  {name:"🚩 FLAGS",items:["Australian flag","Aboriginal flag","State flag","Torres Strait Islander flag","Any other country flag"]}
+ {id:"cars",name:"🚗 CARS & COLOURS",short:"Cars & Colours",core:true,items:[
+  ["White car","⚪",1],["Silver car","🔘",1],["Grey car","🩶",2],["Black car","⚫",2],["Blue car","🔵",3],["Red car","🔴",3],["Yellow car","🟡",5],["Green car","🟢",8],["Pink car","🩷",8],["Orange car","🟠",8],["Convertible","🚘",8],["MINI","🚙",8],["Sports car","🏎️",10],["Combi van","🚐",10]
+ ]},
+ {id:"animals",name:"🦘 ANIMALS",short:"Animals",core:true,items:[
+  ["Dog","🐶",1],["Cat","🐱",1],["Cow","🐄",2],["Sheep","🐑",2],["Horse","🐴",3],["Goat","🐐",5],["Rabbit","🐇",5],["Lizard","🦎",5],["Alpaca","🦙",5],["Termite mound","🪨",5],["Donkey","🫏",8],["Kangaroo","🦘",8],["Deer","🦌",10],["Wallaby","🦘",15],["Snake","🐍",15],["Wombat","🦡",15],["Koala","🐨",25],["Echidna","🦔",25]
+ ]},
+ {id:"birds",name:"🐦 BIRDS",short:"Birds",core:false,items:[
+  ["Magpie","🐦‍⬛",1],["Crow","🐦‍⬛",1],["Seagull","🕊️",1],["Ibis","🪿",2],["Cockatoo","🦜",3],["Duck","🦆",3],["Galah","🦩",3],["Chicken","🐔",5],["Rainbow lorikeet","🦜",5],["Plover","🐧",5],["Pelican","🦢",10],["Peacock","🦚",10],["Eagle","🦅",15],["Kookaburra","🪶",15],["Emu","🦤",20]
+ ]},
+ {id:"vehicles",name:"🚙 VEHICLES",short:"Vehicles",core:true,items:[
+  ["Bus","🚌",2],["Caravan","🚐",2],["Digger","🚜",5],["Tractor","🚜",5],["Garbage truck","🚛",5],["Cement truck","🚛",5],["Motorbike","🏍️",6],["Green truck","🛻",7],["Blue truck","🛻",7],["Red truck","🚚",7],["Police car","🚓",8],["Ambulance","🚑",8],["Fire truck","🚒",8],["Train","🚆",10],["Aeroplane","✈️",10]
+ ]},
+ {id:"shops",name:"🏪 SHOPS",short:"Shops",core:false,items:[
+  ["Petrol station","⛽",1],["Cafe","☕",2],["Woolworths","🛒",3],["Coles","🛒",3],["McDonald's","🍔",5],["KFC","🍗",5],["Bunnings","🔨",7],["Mr Whippy","🍦",15]
+ ]},
+ {id:"sport",name:"⚽ SPORT & RECREATION",short:"Sport & Recreation",core:false,items:[
+  ["Playground","🛝",3],["Swimming pool","🏊",3],["Sports oval","🏟️",3],["Basketball court","🏀",5],["Tennis court","🎾",5],["Skate park","🛹",7],["Golf course","⛳",8],["Stadium","🏟️",10],["Waterslide park","🌊",15]
+ ]},
+ {id:"buildings",name:"🏠 BUILDINGS",short:"Buildings",core:false,items:[
+  ["School","🏫",2],["Bridge","🌉",2],["Post box","📮",4],["Railway crossing","🚂",5],["Boat ramp","🛥️",5],["Church","⛪",5],["Hospital","🏥",5],["Fire station","🚒",5],["Police station","🚓",5],["Windmill","💨",7],["Cemetery","⚰️",7],["Silo","🏭",8],["Pay phone","☎️",15],["Lighthouse","🗼",20]
+ ]},
+ {id:"signs",name:"🚧 SIGNS",short:"Signs",core:true,items:[
+  ["Parking sign","🅿️",1],["Traffic lights","🚦",1],["Stop sign","🛑",2],["School crossing sign","🚸",3],["Bus stop sign","🚏",3],["Road work sign","🚧",5],["Fire danger sign","🔥",5],["Railway crossing sign","🚂",5],["Wildlife ahead","🦘",5],["Stock crossing sign","🐄",5],["Flood area","🌊",5],["Flood depth","📏",5],["School zone flashing lights","🚸",5],["No entry sign","🚫",7],["Oversize load sign","🚛",10],["Road closed sign","🚧",10]
+ ]},
+ {id:"flags",name:"🚩 FLAGS",short:"Flags",core:false,items:[
+  ["Australian flag","🇦🇺",1],["Sports team flag","🚩",3],["Aboriginal flag","🏴",5],["State flag","🚩",5],["Rainbow flag","🏳️‍🌈",5],["Torres Strait Islander flag","💙💚🖤",8],["Any other country flag","🌍",10]
+ ]},
+ {id:"weather",name:"🌦️ WEATHER",short:"Weather",core:false,items:[
+  ["Cloud formation","☁️",2],["Rain","🌧️",3],["Fog","🌫️",5],["Sunrise","🌅",5],["Sunset","🌇",5],["Rainbow","🌈",8],["Dust devil","🌪️",8],["Sun shower","🌦️",8],["Snow","❄️",10],["Lightning","⚡",10],["Shooting star","🌌",15]
+ ]},
+ {id:"water",name:"🌊 WATER & BEACH",short:"Water & Beach",core:false,items:[
+  ["Surfboard","🏄",3],["Beach","🏖️",3],["River","🌊",3],["Kayak","🛶",3],["Boat","🚤",3],["Jetty","⚓",5],["Lake","🏞️",5],["Dam","💧",5],["Jet ski","🚤",8],["Island","🏝️",8],["Marina","⚓",8],["House boat","🚤",10]
+ ]},
+ {id:"adults",name:"👨‍🦰 ADULTS",short:"Adults",core:false,items:[
+  ["XXXX beer sign","🍺",5],["VB sign","🍺",5],["Bundaberg sign","🥤",5],["Adult shop","🔞",10],["Broken-down car","🚗💥",3],["Hitchhiker","🚶",5],["Kangaroo roadkill","🦘",3],["Snake roadkill","🐍",5],["Wombat roadkill","🦡",5],["Bird roadkill","🐦",5],["Bloke in hi-vis","🦺",2],["Dog hanging out window","🐕",6],["Stopped truck","🚛",3]
+ ]}
 ];
-function displaySpots(){
-  const c=document.getElementById("spot-categories");
-  let html='<div class="category-grid">';
-  categories.forEach(cat=>{
-    const list=spots.map((spot,index)=>({spot,index})).filter(x=>cat.items.includes(x.spot.name)); if(!list.length)return;
-    html+=`<div class="category"><h2>${cat.name}</h2>`;
-    list.forEach(({spot,index})=>{
-      const icon=spot.carClass?`<span class="car-symbol ${spot.carClass}"></span>`:spot.emoji;
-      const spotted=spot.spottedBy.length>0;
-      html+=`<button class="spot-button ${spotted?"spotted":""}" onclick="spotItem(${index})"><div class="spot-main"><span class="spot-name">${icon} ${spot.name}</span><span class="spot-points">+${spot.points}</span></div>${spotted?`<div class="spotted-by">👤 ${spot.spottedBy.join(", ")}</div>`:""}</button>`;
-    });
-    html+='</div>';
-  });
-  c.innerHTML=html+'</div>';
+
+function makeSpots(){
+ const ids=new Set(selectedCategories); const result=[];
+ categories.forEach(cat=>{if(!ids.has(cat.id))return;cat.items.forEach(([name,emoji,points])=>result.push({name,emoji,points,spottedBy:[],categoryId:cat.id}));});
+ return result;
 }
-function spotItem(index){
-  const spot=spots[index]; const available=players.filter(p=>!spot.spottedBy.includes(p.name)); if(!available.length)return;
-  const c=document.getElementById("spot-categories");
-  const icon=spot.carClass?`<span class="car-symbol ${spot.carClass}" style="display:inline-block;width:30px;height:30px;vertical-align:middle"></span>`:spot.emoji;
-  c.innerHTML=`<div class="spot-choice-card"><div class="spot-choice-emoji">${icon}</div><div class="spot-choice-name">${spot.name}</div><div class="spot-choice-points">${spot.points} POINT${spot.points===1?"":"S"}</div></div><div class="choose-title">WHO SPOTTED IT?</div>${available.map((p,i)=>`<button class="player-choice" onclick="choosePlayer(${index},${i})"><div class="player-choice-avatar">${p.avatar}</div><div class="player-choice-name">${p.name}</div><div class="player-choice-pick">TAP</div></button>`).join("")}<button class="back-button" onclick="displaySpots()">← BACK TO SPOTTO</button>`;
+function initSetup(){
+ document.getElementById("avatar-picker").innerHTML=avatarOptions.map((a,i)=>`<button type="button" class="avatar-option ${i===0?"selected":""}" onclick="selectAvatar('${a}',this)">${a}</button>`).join("");
+ selectedCategories=categories.filter(c=>c.core).map(c=>c.id);renderCategoryChoices();updateSelectedCount();checkSavedGame();
 }
+function showPlayers(){document.getElementById("home-screen").style.display="none";document.getElementById("player-screen").style.display="block";}
+function selectAvatar(avatar,button){selectedAvatar=avatar;document.querySelectorAll(".avatar-option").forEach(b=>b.classList.remove("selected"));button.classList.add("selected");}
+function addPlayer(){const input=document.getElementById("player-name"),name=input.value.trim();if(!name)return;if(players.some(p=>p.name.toLowerCase()===name.toLowerCase()))return;players.push({name:name.charAt(0).toUpperCase()+name.slice(1),score:0,avatar:selectedAvatar});input.value="";displayPlayers();selectedAvatar="😀";document.querySelectorAll(".avatar-option").forEach((b,i)=>b.classList.toggle("selected",i===0));input.focus();}
+function removePlayer(index){players.splice(index,1);displayPlayers();}
+function displayPlayers(){const c=document.getElementById("players");c.innerHTML=players.map((p,i)=>`<div class="player-card"><div class="player-avatar">${p.avatar}</div><div class="player-name-card">${p.name}</div><button class="remove-player" onclick="removePlayer(${i})" aria-label="Remove player">×</button></div>`).join("");document.getElementById("continue-button").style.display=players.length>=1?"block":"none";}
+function selectGameMode(mode){gameMode=mode;document.getElementById("target-mode-button").classList.toggle("selected",mode==="target");document.getElementById("infinite-mode-button").classList.toggle("selected",mode==="infinite");document.getElementById("target-settings").style.display=mode==="target"?"block":"none";}
+function updateTargetScore(){targetScore=Number(document.getElementById("target-score").value);document.getElementById("target-score-display").textContent=targetScore+" POINTS";}
+function selectCategoryMode(mode){categoryMode=mode;document.getElementById("easy-category-button").classList.toggle("selected",mode==="easy");document.getElementById("custom-category-button").classList.toggle("selected",mode==="custom");document.getElementById("custom-category-settings").style.display=mode==="custom"?"block":"none";if(mode==="easy")selectEasyCategories();updateSelectedCount();}
+function selectEasyCategories(){selectedCategories=categories.filter(c=>c.core).map(c=>c.id);renderCategoryChoices();updateSelectedCount();}
+function selectAllCategories(){selectedCategories=categories.map(c=>c.id);categoryMode="custom";document.getElementById("easy-category-button").classList.remove("selected");document.getElementById("custom-category-button").classList.add("selected");document.getElementById("custom-category-settings").style.display="block";renderCategoryChoices();updateSelectedCount();}
+function toggleCategory(id){if(selectedCategories.includes(id))selectedCategories=selectedCategories.filter(x=>x!==id);else selectedCategories.push(id);categoryMode="custom";document.getElementById("easy-category-button").classList.remove("selected");document.getElementById("custom-category-button").classList.add("selected");renderCategoryChoices();updateSelectedCount();}
+function renderCategoryChoices(){const c=document.getElementById("category-choice-grid");c.innerHTML=categories.map(cat=>{const selected=selectedCategories.includes(cat.id);return `<button class="category-choice ${selected?"selected":""}" onclick="toggleCategory('${cat.id}')"><span class="category-choice-icon">${cat.name.split(" ")[0]}</span><span class="category-choice-text"><span class="category-choice-name">${cat.short}</span><span class="category-choice-count">${cat.items.length} items</span></span><span class="category-choice-check">${selected?"✓":""}</span></button>`}).join("");}
+function getSelectedItemCount(){return categories.filter(c=>selectedCategories.includes(c.id)).reduce((n,c)=>n+c.items.length,0);}
+function updateSelectedCount(){const n=getSelectedItemCount();document.getElementById("selected-count").innerHTML=`📋 ${n} ITEM${n===1?"":"S"} SELECTED<small>${categoryMode==="easy"?"Easy game categories":"Custom category selection"}</small>`;}
+function startGame(){if(players.length<1||selectedCategories.length===0)return;spots=makeSpots();foundSpotCount=0;previousRankings=[];gameStarted=true;saveGame();document.getElementById("player-screen").style.display="none";document.getElementById("game-screen").style.display="block";displayScoreboard();displaySpots();window.scrollTo(0,0);}
+
+function displayScoreboard(){const ranked=[...players].sort((a,b)=>b.score-a.score),highest=Math.max(...players.map(p=>p.score),1),pct=Math.min(100,(foundSpotCount/getSelectedItemCount())*100),medals=["🥇","🥈","🥉"];document.getElementById("scoreboard").innerHTML=`<div class="scoreboard"><div class="grand-prix">🏁 SPOTTO GRAND PRIX</div>${ranked.map((p,i)=>{const progress=Math.max(8,(p.score/highest)*100);return `<div class="race-row"><div class="race-top"><span class="race-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span>${p.score} PTS</span></div><div class="race-track"><div class="race-fill" style="width:${progress}%"></div><div class="race-car" style="left:calc(${progress}% - 25px)">🏎️</div></div></div>`}).join("")}<div class="progress-wrap"><div class="progress-top"><span>⭐ SPOTS FOUND</span><span>${foundSpotCount} / ${getSelectedItemCount()}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></div></div>`;previousRankings=ranked.map(p=>p.name);}
+
+function displaySpots(){const c=document.getElementById("spot-categories");let html='<div class="category-grid">';categories.filter(cat=>selectedCategories.includes(cat.id)).forEach(cat=>{const list=spots.map((spot,index)=>({spot,index})).filter(x=>x.spot.categoryId===cat.id&&x.spot.spottedBy.length<players.length);if(!list.length)return;html+=`<div class="category"><h2>${cat.name}</h2>`;list.forEach(({spot,index})=>{const spotted=spot.spottedBy.length>0;html+=`<button class="spot-button ${spotted?"spotted":""}" onclick="spotItem(${index})"><div class="spot-main"><span class="spot-name">${spot.emoji} ${spot.name}</span><span class="spot-points">+${spot.points}</span></div>${spotted?`<div class="spotted-by">👤 ${spot.spottedBy.join(", ")}</div>`:""}</button>`;});html+='</div>';});c.innerHTML=html+'</div>';}
+
+function spotItem(index){const spot=spots[index];const available=players.filter(p=>!spot.spottedBy.includes(p.name));if(!available.length)return;if(players.length===1){choosePlayer(index,0);return;}const c=document.getElementById("spot-categories");c.innerHTML=`<div class="spot-choice-card"><div class="spot-choice-emoji">${spot.emoji}</div><div class="spot-choice-name">${spot.name}</div><div class="spot-choice-points">${spot.points} POINT${spot.points===1?"":"S"}</div></div><div class="choose-title">WHO SPOTTED IT?</div>${available.map((p,i)=>`<button class="player-choice" onclick="choosePlayer(${index},${i})"><div class="player-choice-avatar">${p.avatar}</div><div class="player-choice-name">${p.name}</div><div class="player-choice-pick">TAP</div></button>`).join("")}<button class="back-button" onclick="displaySpots()">← BACK TO SPOTTO</button>`;}
 
 let audioContext;
 function playTone(frequency,duration,type="sine",volume=.06){try{audioContext=audioContext||new(window.AudioContext||window.webkitAudioContext)();if(audioContext.state==="suspended")audioContext.resume();const o=audioContext.createOscillator(),g=audioContext.createGain();o.type=type;o.frequency.value=frequency;g.gain.setValueAtTime(volume,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);o.connect(g);g.connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+duration);}catch(e){}}
@@ -389,25 +394,21 @@ function showOvertake(name){const p=document.getElementById("overtake-pop");p.te
 function showScorePop(points,name){const p=document.getElementById("score-pop");p.textContent="+"+points+" 🎉";p.classList.remove("show","score-pop-big","score-pop-rare");if(points>=15)p.classList.add("score-pop-big");if(points>=20)p.classList.add("score-pop-rare");void p.offsetWidth;p.classList.add("show");playSpotSound(points);setTimeout(()=>p.classList.remove("show","score-pop-big","score-pop-rare"),1450);}
 function launchConfetti(){const c=document.getElementById("confetti");c.innerHTML="";for(let i=0;i<80;i++){const piece=document.createElement("div");piece.className="confetti-piece";piece.style.left=Math.random()*100+"%";piece.style.background=["#ffbf24","#2fb36f","#ff6b6b","#4dabf7","#b197fc","#ffffff"][Math.floor(Math.random()*6)];piece.style.setProperty("--drift",Math.random()*220-110+"px");piece.style.animationDelay=Math.random()*350+"ms";c.appendChild(piece);}setTimeout(()=>c.innerHTML="",2300);}
 
-function choosePlayer(spotIndex,playerIndex){
-  const spot=spots[spotIndex];const available=players.filter(p=>!spot.spottedBy.includes(p.name));const player=available[playerIndex];if(!player)return;
-  const wasUnfound=spot.spottedBy.length===0;
-  player.score+=spot.points;spot.spottedBy.push(player.name);if(wasUnfound)foundSpotCount++;
-  showScorePop(spot.points,player.name);
-  if(gameMode==="target"&&player.score>=targetScore){finishGame(player);return;}
-  if(spot.spottedBy.length===players.length)spots.splice(spotIndex,1);
-  const oldRank=[...previousRankings];displayScoreboard();displaySpots();const newRank=previousRankings.indexOf(player.name);const old=oldRank.indexOf(player.name);if(old!==-1&&newRank!==-1&&newRank<old)setTimeout(()=>showOvertake(player.name),180);
-}
-function finishGame(winner){
-  document.getElementById("game-screen").style.display="none";document.getElementById("winner-screen").style.display="block";
-  const ranked=[...players].sort((a,b)=>b.score-a.score),medals=["🥇","🥈","🥉"],wm=document.getElementById("winner-message");
-  wm.classList.remove("winner-celebrate");void wm.offsetWidth;wm.classList.add("winner-celebrate");
-  wm.innerHTML=`<div class="winner-title">${winner.name} WINS!</div><div class="winner-sub">${winner.score} POINTS<br>THE FINISH LINE HAS BEEN CROSSED!</div><div class="final-board">${ranked.map((p,i)=>`<div class="final-row"><span class="final-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span class="final-score">${p.score} PTS</span></div>`).join("")}</div>`;
-  launchConfetti();playWinSound();
-}
+function choosePlayer(spotIndex,playerIndex){const spot=spots[spotIndex];const available=players.filter(p=>!spot.spottedBy.includes(p.name));const player=available[playerIndex];if(!player)return;const wasUnfound=spot.spottedBy.length===0;player.score+=spot.points;spot.spottedBy.push(player.name);if(wasUnfound)foundSpotCount++;showScorePop(spot.points,player.name);saveGame();if(gameMode==="target"&&player.score>=targetScore){finishGame(player);return;}const oldRank=[...previousRankings];displayScoreboard();displaySpots();const newRank=previousRankings.indexOf(player.name),old=oldRank.indexOf(player.name);if(old!==-1&&newRank!==-1&&newRank<old)setTimeout(()=>showOvertake(player.name),180);}
+function finishGame(winner){gameStarted=false;localStorage.removeItem(SAVE_KEY);document.getElementById("game-screen").style.display="none";document.getElementById("winner-screen").style.display="block";const ranked=[...players].sort((a,b)=>b.score-a.score),medals=["🥇","🥈","🥉"],wm=document.getElementById("winner-message");wm.classList.remove("winner-celebrate");void wm.offsetWidth;wm.classList.add("winner-celebrate");wm.innerHTML=`<div class="winner-title" style="font-size:30px;margin-bottom:8px">${winner.name.toUpperCase()} WINS!</div><div class="winner-sub">${winner.score} POINT${winner.score===1?"":"S"}</div><div class="final-board">${ranked.map((p,i)=>`<div class="final-row"><span class="final-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span class="final-score">${p.score} PTS</span></div>`).join("")}</div>`;launchConfetti();playWinSound();}
 function confirmEndGame(){if(!confirm("🏁 End race?\n\nAre you sure you want to finish this race?"))return;const winner=[...players].sort((a,b)=>b.score-a.score)[0];finishGame(winner);}
 
+function saveGame(){if(!gameStarted)return;const data={players,gameMode,targetScore,selectedCategories,categoryMode,spots,foundSpotCount};try{localStorage.setItem(SAVE_KEY,JSON.stringify(data));}catch(e){}}
+function checkSavedGame(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const data=JSON.parse(raw);if(!data||!Array.isArray(data.players)||!data.players.length)return;const total=data.selectedCategories?.length?categories.filter(c=>data.selectedCategories.includes(c.id)).reduce((n,c)=>n+c.items.length,0):0;document.getElementById("resume-summary").innerHTML=`<div class="resume-stats"><span>👥 ${data.players.length} PLAYER${data.players.length===1?"":"S"}</span><span>🏁 ${data.players.reduce((n,p)=>n+p.score,0)} PTS</span><span>⭐ ${data.foundSpotCount||0}/${total}</span></div>`;document.getElementById("resume-panel").style.display="block";}catch(e){localStorage.removeItem(SAVE_KEY);}}
+function resumeGame(){try{const data=JSON.parse(localStorage.getItem(SAVE_KEY));if(!data)return;players.splice(0,players.length,...data.players);gameMode=data.gameMode||"target";targetScore=data.targetScore||100;selectedCategories=data.selectedCategories||categories.filter(c=>c.core).map(c=>c.id);categoryMode=data.categoryMode||"easy";spots=data.spots||makeSpots();foundSpotCount=data.foundSpotCount||0;gameStarted=true;document.getElementById("home-screen").style.display="none";document.getElementById("player-screen").style.display="none";document.getElementById("game-screen").style.display="block";displayScoreboard();displaySpots();window.scrollTo(0,0);}catch(e){discardSavedGame();}}
+function discardSavedGame(){localStorage.removeItem(SAVE_KEY);document.getElementById("resume-panel").style.display="none";}
+
+window.addEventListener("beforeunload",()=>{if(gameStarted)saveGame();});
+try{document.body.style.overscrollBehaviorY="contain";}catch(e){}
+
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&document.activeElement?.id==="player-name")addPlayer();});
 initSetup();
+
 </script>
 </body>
 </html>
