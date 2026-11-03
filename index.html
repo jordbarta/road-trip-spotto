@@ -449,19 +449,20 @@ function displaySpots(){
 }
 
 function normaliseSearch(value){return value.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();}
+function singularSearch(value){return normaliseSearch(value).split(" ").map(word=>word.length>4&&word.endsWith("ies")?word.slice(0,-3)+"y":word.length>3&&word.endsWith("s")?word.slice(0,-1):word).join(" ");}
 const spotAliases={
  "garbage truck":["rubbish truck","bin truck","garbo truck","lorry"],"cement truck":["concrete truck","mixer truck","lorry"],"caravan":["camper","camper trailer"],"digger":["excavator"],"motorbike":["motorcycle","bike"],"aeroplane":["airplane","plane"],"petrol station":["servo","service station","fuel station"],"mcdonald's":["mcdonalds","maccas"],"rainbow lorikeet":["lorikeet"],"red truck":["lorry"],"blue truck":["lorry"],"green truck":["lorry"],"magpie":["bird"],"seagull":["gull"],"kookaburra":[" kooka"],"woolworths":["woolies"],"post box":["mailbox","letterbox"],"railway crossing":["train crossing","train crossing sign","rail crossing","level crossing"],"railway crossing sign":["train crossing","train crossing sign","rail crossing","level crossing"],"stock crossing sign":["animal crossing sign","animal crossing","stock crossing","cattle crossing","livestock crossing","farm animal crossing"],"traffic lights":["traffic light"],"sports oval":["oval","footy oval"],"swimming pool":["pool"],"blue truck":["truck"],"red truck":["truck"],"green truck":["truck"],"dog":["doggy","puppy"],"cat":["kitty","kitten"],"horse":["pony"],"rabbit":["bunny"],"lorry":["truck"]
 };
 function getAvailableSpots(){return spots.map((spot,index)=>({spot,index})).filter(x=>x.spot.spottedBy.length<players.length);}
 function searchSpots(query){
  const box=document.getElementById("finder-results");if(!box)return;
- const q=normaliseSearch(query);
+ const q=normaliseSearch(query),singularQ=singularSearch(query);
  if(!q){box.innerHTML="";return;}
- const words=q.split(" ");
+ const words=singularQ.split(" ");
  const matches=getAvailableSpots().map(x=>{
   const name=normaliseSearch(x.spot.name),aliases=(spotAliases[x.spot.name.toLowerCase()]||[]).map(normaliseSearch);
   const hay=[name,...aliases];
-  const score=hay.reduce((best,s)=>Math.max(best,s===q?100:s.startsWith(q)?80:s.includes(q)?60:words.every(w=>s.includes(w))?40:0),0);
+  const score=hay.reduce((best,s)=>{const singular=singularSearch(s);return Math.max(best,s===q?100:singular===singularQ?100:s.startsWith(q)?80:singular.startsWith(singularQ)?80:s.includes(q)?60:singular.includes(singularQ)?60:words.every(w=>singular.includes(w))?40:0);},0);
   return {...x,score};
  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.spot.name.localeCompare(b.spot.name)).slice(0,10);
  box.innerHTML=matches.length?matches.map(x=>`<button class="finder-result" onclick="spotItem(${x.index})"><span class="finder-result-emoji">${x.spot.emoji}</span><span class="finder-result-name">${x.spot.name}</span><span class="finder-result-points">+${x.spot.points}</span></button>`).join(""):'<div class="finder-empty">No matching spots yet — try another word.</div>';
