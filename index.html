@@ -131,6 +131,26 @@
   .progress-top { display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:1000;margin-bottom:7px;text-transform:uppercase; }
   .progress-track { height:15px;background:rgba(255,255,255,.18);border-radius:8px;overflow:hidden; }
   .progress-fill { height:100%;background:linear-gradient(90deg,#4cd58a,#a7efc7);border-radius:8px;transition:width .55s ease; }
+  .spot-finder { background:white;border:1px solid #e5edf4;border-radius:20px;padding:13px;margin:0 0 14px;box-shadow:0 4px 12px rgba(30,57,82,.07); }
+  .spot-finder-title { font-size:18px;font-weight:1000;margin:0 0 9px; }
+  .spot-search-row { display:flex;gap:8px;align-items:stretch; }
+  .spot-search-input { min-width:0;flex:1;border:2px solid #dce5ed;border-radius:13px;padding:13px 12px;font:700 16px inherit;color:var(--ink);background:#f8fafc; }
+  .spot-search-input:focus { outline:3px solid rgba(47,179,111,.18);border-color:var(--green); }
+  .voice-button { flex:none;border:0;border-radius:13px;background:var(--navy);color:white;font-size:21px;font-weight:900;padding:0 15px;cursor:pointer; }
+  .voice-button.listening { background:#d93b3b;animation:voicePulse 1s infinite; }
+  @keyframes voicePulse { 50% { transform:scale(1.04);opacity:.8; } }
+  .finder-hint { font-size:11px;color:var(--muted);font-weight:700;margin:7px 2px 0; }
+  .finder-results { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px; }
+  .finder-result { display:flex;align-items:center;gap:8px;text-align:left;border:1px solid #e5ebf1;border-radius:12px;background:#f4f7fa;padding:10px 9px;min-width:0;color:var(--ink);font-weight:900;cursor:pointer; }
+  .finder-result:active { transform:scale(.97); }
+  .finder-result-emoji { font-size:22px;flex:none; }
+  .finder-result-name { font-size:12px;line-height:1.15;flex:1; }
+  .finder-result-points { color:#1b6d43;font-size:12px;white-space:nowrap; }
+  .finder-empty { grid-column:1/-1;padding:12px;text-align:center;color:var(--muted);font-size:13px;font-weight:800; }
+  .finder-shortcuts,.finder-recent { display:flex;gap:7px;overflow-x:auto;padding:9px 0 1px; }
+  .finder-chip { flex:none;border:1px solid #dfe7ee;border-radius:999px;background:#f4f7fa;padding:8px 11px;font-size:12px;font-weight:900;color:var(--ink);cursor:pointer; }
+  .finder-label { font-size:10px;color:var(--muted);font-weight:1000;letter-spacing:.7px;margin:11px 0 0 2px;text-transform:uppercase; }
+  .finder-recent:empty,.finder-label:has(+ .finder-recent:empty) { display:none; }
   .category-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start; }
   .category-column { display:flex;flex-direction:column;gap:10px;min-width:0; }
   .category { background:white;border-radius:19px;padding:9px;box-shadow:0 4px 12px rgba(30,57,82,.08);border:1px solid #edf1f5; }
@@ -391,6 +411,8 @@ function startGame(){if(players.length<1||selectedCategories.length===0)return;s
 
 function displayScoreboard(){const ranked=[...players].sort((a,b)=>b.score-a.score),highest=Math.max(...players.map(p=>p.score),1),pct=Math.min(100,(foundSpotCount/getSelectedItemCount())*100),medals=["🥇","🥈","🥉"];document.getElementById("scoreboard").innerHTML=`<div class="scoreboard"><div class="grand-prix">🏁 SPOTTO GRAND PRIX</div>${ranked.map((p,i)=>{const progress=Math.max(8,(p.score/highest)*100);return `<div class="race-row"><div class="race-top"><span class="race-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span>${p.score} PTS</span></div><div class="race-track"><div class="race-fill" style="width:${progress}%"></div><div class="race-car" style="left:calc(${progress}% - 25px)">🏎️</div></div></div>`}).join("")}<div class="progress-wrap"><div class="progress-top"><span>⭐ SPOTS FOUND</span><span>${foundSpotCount} / ${getSelectedItemCount()}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></div></div>`;previousRankings=ranked.map(p=>p.name);}
 
+let recentSpotIndices=[];
+let speechRecognition=null;
 function displaySpots(){
  const c=document.getElementById("spot-categories");
  const active=[];
@@ -405,7 +427,7 @@ function displaySpots(){
  columns.forEach(column=>{
   html+='<div class="category-column">';
   column.forEach(({cat,list})=>{
-   html+=`<div class="category"><h2>${cat.name}</h2>`;
+   html+=`<div class="category" id="spot-category-${cat.id}"><h2>${cat.name}</h2>`;
    list.forEach(({spot,index})=>{
     const spotted=spot.spottedBy.length>0;
     html+=`<button class="spot-button ${spotted?"spotted":""}" onclick="spotItem(${index})"><div class="spot-main"><span class="spot-name">${spot.emoji} ${spot.name}</span><span class="spot-points">+${spot.points}</span></div>${spotted?`<div class="spotted-by">👤 ${spot.spottedBy.join(", ")}</div>`:""}</button>`;
@@ -414,7 +436,55 @@ function displaySpots(){
   });
   html+='</div>';
  });
- c.innerHTML=html+'</div>';
+ const finder=`<div class="spot-finder">
+  <div class="spot-finder-title">🔎 WHAT DID YOU SPOT?</div>
+  <div class="spot-search-row"><input id="spot-search" class="spot-search-input" type="search" placeholder="Try “horse”, “lorry”, “red car”..." autocomplete="off" oninput="searchSpots(this.value)"><button id="voice-search-button" class="voice-button" type="button" aria-label="Voice search" onclick="startVoiceSearch()">🎙️</button></div>
+  <div class="finder-hint" id="voice-hint">Type to find an item, or tap the microphone to say what you saw.</div>
+  <div id="finder-results" class="finder-results"></div>
+  <div class="finder-label">BROWSE BY CATEGORY</div><div class="finder-shortcuts">${categories.filter(cat=>selectedCategories.includes(cat.id)).map(cat=>`<button class="finder-chip" onclick="scrollToSpotCategory('${cat.id}')">${cat.name.split(" ")[0]} ${cat.short}</button>`).join("")}</div>
+  <div class="finder-label">RECENTLY SPOTTED</div><div id="finder-recent" class="finder-recent"></div>
+ </div>`;
+ c.innerHTML=finder+html+'</div>';
+ renderRecentSpots();
+}
+
+function normaliseSearch(value){return value.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\\s+/g," ").trim();}
+const spotAliases={
+ "garbage truck":["rubbish truck","bin truck","garbo truck"],"cement truck":["concrete truck","mixer truck"],"caravan":["camper","camper trailer"],"digger":["excavator"],"motorbike":["motorcycle","bike"],"aeroplane":["airplane","plane"],"petrol station":["servo","service station","fuel station"],"mcdonald's":["mcdonalds","maccas"],"rainbow lorikeet":["lorikeet"],"magpie":["bird"],"seagull":["gull"],"kookaburra":[" kooka"],"woolworths":["woolies"],"post box":["mailbox","letterbox"],"traffic lights":["traffic light"],"sports oval":["oval","footy oval"],"swimming pool":["pool"],"blue truck":["truck"],"red truck":["truck"],"green truck":["truck"],"dog":["doggy","puppy"],"cat":["kitty","kitten"],"horse":["pony"],"rabbit":["bunny"],"lorry":["truck"]
+};
+function getAvailableSpots(){return spots.map((spot,index)=>({spot,index})).filter(x=>x.spot.spottedBy.length<players.length);}
+function searchSpots(query){
+ const box=document.getElementById("finder-results");if(!box)return;
+ const q=normaliseSearch(query);
+ if(!q){box.innerHTML="";return;}
+ const words=q.split(" ");
+ const matches=getAvailableSpots().map(x=>{
+  const name=normaliseSearch(x.spot.name),aliases=(spotAliases[x.spot.name.toLowerCase()]||[]).map(normaliseSearch);
+  const hay=[name,...aliases];
+  const score=hay.reduce((best,s)=>Math.max(best,s===q?100:s.startsWith(q)?80:s.includes(q)?60:words.every(w=>s.includes(w))?40:0),0);
+  return {...x,score};
+ }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.spot.name.localeCompare(b.spot.name)).slice(0,10);
+ box.innerHTML=matches.length?matches.map(x=>`<button class="finder-result" onclick="spotItem(${x.index})"><span class="finder-result-emoji">${x.spot.emoji}</span><span class="finder-result-name">${x.spot.name}</span><span class="finder-result-points">+${x.spot.points}</span></button>`).join(""):'<div class="finder-empty">No matching spots yet — try another word.</div>';
+}
+function scrollToSpotCategory(id){const el=document.getElementById("spot-category-"+id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}
+function renderRecentSpots(){
+ const box=document.getElementById("finder-recent");if(!box)return;
+ const recent=recentSpotIndices.filter((v,i,a)=>a.indexOf(v)===i).filter(i=>spots[i]&&spots[i].spottedBy.length<players.length).slice(0,6);
+ box.innerHTML=recent.map(i=>`<button class="finder-chip" onclick="spotItem(${i})">${spots[i].emoji} ${spots[i].name}</button>`).join("");
+}
+function startVoiceSearch(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){const hint=document.getElementById("voice-hint");if(hint)hint.textContent="Voice recognition isn't supported in this browser. Tap the search box and use the microphone on your iPhone keyboard to dictate.";const input=document.getElementById("spot-search");if(input)input.focus();return;}
+ const button=document.getElementById("voice-search-button"),hint=document.getElementById("voice-hint");
+ try{
+  if(speechRecognition){speechRecognition.abort();speechRecognition=null;}
+  speechRecognition=new SR();speechRecognition.lang="en-AU";speechRecognition.interimResults=false;speechRecognition.maxAlternatives=3;
+  button.classList.add("listening");button.textContent="🔴";hint.textContent="Listening… say what you spotted.";
+  speechRecognition.onresult=e=>{const transcript=e.results[0][0].transcript;const input=document.getElementById("spot-search");if(input){input.value=transcript;searchSpots(transcript);}hint.textContent="Heard: “"+transcript+"” — tap the matching spot below.";};
+  speechRecognition.onerror=()=>{hint.textContent="Couldn't hear that. Try again or use the keyboard microphone.";};
+  speechRecognition.onend=()=>{button.classList.remove("listening");button.textContent="🎙️";speechRecognition=null;};
+  speechRecognition.start();
+ }catch(e){button.classList.remove("listening");button.textContent="🎙️";hint.textContent="Voice search couldn't start. Try the keyboard microphone instead.";}
 }
 
 function spotItem(index){const spot=spots[index];const available=players.filter(p=>!spot.spottedBy.includes(p.name));if(!available.length)return;if(players.length===1){choosePlayer(index,0);return;}const c=document.getElementById("spot-categories");c.innerHTML=`<div class="spot-choice-card"><div class="spot-choice-emoji">${spot.emoji}</div><div class="spot-choice-name">${spot.name}</div><div class="spot-choice-points">${spot.points} POINT${spot.points===1?"":"S"}</div></div><div class="choose-title">WHO SPOTTED IT?</div>${available.map((p,i)=>`<button class="player-choice" onclick="choosePlayer(${index},${i})"><div class="player-choice-avatar">${p.avatar}</div><div class="player-choice-name">${p.name}</div><div class="player-choice-pick">TAP</div></button>`).join("")}<button class="back-button" onclick="displaySpots()">← BACK TO SPOTTO</button>`;}
@@ -427,7 +497,7 @@ function showOvertake(name){const p=document.getElementById("overtake-pop");p.te
 function showScorePop(points,name){const p=document.getElementById("score-pop");p.textContent="+"+points+" 🎉";p.classList.remove("show","score-pop-big","score-pop-rare");if(points>=15)p.classList.add("score-pop-big");if(points>=20)p.classList.add("score-pop-rare");void p.offsetWidth;p.classList.add("show");playSpotSound(points);setTimeout(()=>p.classList.remove("show","score-pop-big","score-pop-rare"),1450);}
 function launchConfetti(){const c=document.getElementById("confetti");c.innerHTML="";for(let i=0;i<80;i++){const piece=document.createElement("div");piece.className="confetti-piece";piece.style.left=Math.random()*100+"%";piece.style.background=["#ffbf24","#2fb36f","#ff6b6b","#4dabf7","#b197fc","#ffffff"][Math.floor(Math.random()*6)];piece.style.setProperty("--drift",Math.random()*220-110+"px");piece.style.animationDelay=Math.random()*350+"ms";c.appendChild(piece);}setTimeout(()=>c.innerHTML="",2300);}
 
-function choosePlayer(spotIndex,playerIndex){const spot=spots[spotIndex];const available=players.filter(p=>!spot.spottedBy.includes(p.name));const player=available[playerIndex];if(!player)return;const wasUnfound=spot.spottedBy.length===0;player.score+=spot.points;spot.spottedBy.push(player.name);if(wasUnfound)foundSpotCount++;showScorePop(spot.points,player.name);saveGame();if(gameMode==="target"&&player.score>=targetScore){finishGame(player);return;}const oldRank=[...previousRankings];displayScoreboard();displaySpots();const newRank=previousRankings.indexOf(player.name),old=oldRank.indexOf(player.name);if(old!==-1&&newRank!==-1&&newRank<old)setTimeout(()=>showOvertake(player.name),180);}
+function choosePlayer(spotIndex,playerIndex){const spot=spots[spotIndex];const available=players.filter(p=>!spot.spottedBy.includes(p.name));const player=available[playerIndex];if(!player)return;const wasUnfound=spot.spottedBy.length===0;recentSpotIndices.unshift(spotIndex);recentSpotIndices=[...new Set(recentSpotIndices)].slice(0,12);player.score+=spot.points;spot.spottedBy.push(player.name);if(wasUnfound)foundSpotCount++;showScorePop(spot.points,player.name);saveGame();if(gameMode==="target"&&player.score>=targetScore){finishGame(player);return;}const oldRank=[...previousRankings];displayScoreboard();displaySpots();const newRank=previousRankings.indexOf(player.name),old=oldRank.indexOf(player.name);if(old!==-1&&newRank!==-1&&newRank<old)setTimeout(()=>showOvertake(player.name),180);}
 function finishGame(winner){gameStarted=false;localStorage.removeItem(SAVE_KEY);document.getElementById("game-screen").style.display="none";document.getElementById("winner-screen").style.display="block";const ranked=[...players].sort((a,b)=>b.score-a.score),medals=["🥇","🥈","🥉"],wm=document.getElementById("winner-message");wm.classList.remove("winner-celebrate");void wm.offsetWidth;wm.classList.add("winner-celebrate");wm.innerHTML=`<div class="winner-title" style="font-size:30px;margin-bottom:8px">${winner.name.toUpperCase()} WINS!</div><div class="winner-sub">${winner.score} POINT${winner.score===1?"":"S"}</div><div class="final-board">${ranked.map((p,i)=>`<div class="final-row"><span class="final-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span class="final-score">${p.score} PTS</span></div>`).join("")}</div>`;launchConfetti();playWinSound();}
 function confirmEndGame(){if(!confirm("🏁 End race?\n\nAre you sure you want to finish this race?"))return;const winner=[...players].sort((a,b)=>b.score-a.score)[0];finishGame(winner);}
 
