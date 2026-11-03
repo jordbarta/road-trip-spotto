@@ -134,7 +134,7 @@
   .spot-finder { background:white;border:1px solid #e5edf4;border-radius:20px;padding:13px;margin:0 0 14px;box-shadow:0 4px 12px rgba(30,57,82,.07); }
   .spot-finder-title { font-size:18px;font-weight:1000;margin:0 0 9px; }
   .spot-search-row { display:flex;gap:8px;align-items:stretch; }
-  .spot-search-input { min-width:0;flex:1;border:2px solid #dce5ed;border-radius:13px;padding:13px 12px;font:700 16px inherit;color:var(--ink);background:#f8fafc; }
+  .spot-search-input { min-width:0;flex:1;border:2px solid #dce5ed;border-radius:13px;padding:13px 12px;font:700 16px system-ui,sans-serif;color:var(--ink);background:#f8fafc; }
   .spot-search-input:focus { outline:3px solid rgba(47,179,111,.18);border-color:var(--green); }
   .voice-button { flex:none;border:0;border-radius:13px;background:var(--navy);color:white;font-size:21px;font-weight:900;padding:0 15px;cursor:pointer; }
   .voice-button.listening { background:#d93b3b;animation:voicePulse 1s infinite; }
@@ -407,7 +407,7 @@ function toggleCategory(id){if(selectedCategories.includes(id))selectedCategorie
 function renderCategoryChoices(){const c=document.getElementById("category-choice-grid");c.innerHTML=categories.map(cat=>{const selected=selectedCategories.includes(cat.id);return `<button class="category-choice ${selected?"selected":""}" onclick="toggleCategory('${cat.id}')"><span class="category-choice-icon">${cat.name.split(" ")[0]}</span><span class="category-choice-text"><span class="category-choice-name">${cat.short}</span><span class="category-choice-count">${cat.items.length} items</span></span><span class="category-choice-check">${selected?"✓":""}</span></button>`}).join("");}
 function getSelectedItemCount(){return categories.filter(c=>selectedCategories.includes(c.id)).reduce((n,c)=>n+c.items.length,0);}
 function updateSelectedCount(){const n=getSelectedItemCount();document.getElementById("selected-count").innerHTML=`📋 ${n} ITEM${n===1?"":"S"} SELECTED<small>${categoryMode==="easy"?"Easy game categories":"Custom category selection"}</small>`;}
-function startGame(){if(players.length<1||selectedCategories.length===0)return;spots=makeSpots();foundSpotCount=0;previousRankings=[];gameStarted=true;saveGame();document.getElementById("player-screen").style.display="none";document.getElementById("game-screen").style.display="block";displayScoreboard();displaySpots();window.scrollTo(0,0);}
+function startGame(){if(players.length<1||selectedCategories.length===0)return;recentSpotIndices=[];spots=makeSpots();foundSpotCount=0;previousRankings=[];gameStarted=true;saveGame();document.getElementById("player-screen").style.display="none";document.getElementById("game-screen").style.display="block";displayScoreboard();displaySpots();window.scrollTo(0,0);}
 
 function displayScoreboard(){const ranked=[...players].sort((a,b)=>b.score-a.score),highest=Math.max(...players.map(p=>p.score),1),pct=Math.min(100,(foundSpotCount/getSelectedItemCount())*100),medals=["🥇","🥈","🥉"];document.getElementById("scoreboard").innerHTML=`<div class="scoreboard"><div class="grand-prix">🏁 SPOTTO GRAND PRIX</div>${ranked.map((p,i)=>{const progress=Math.max(8,(p.score/highest)*100);return `<div class="race-row"><div class="race-top"><span class="race-name">${medals[i]||"🏎️"} ${p.avatar} ${p.name}</span><span>${p.score} PTS</span></div><div class="race-track"><div class="race-fill" style="width:${progress}%"></div><div class="race-car" style="left:calc(${progress}% - 25px)">🏎️</div></div></div>`}).join("")}<div class="progress-wrap"><div class="progress-top"><span>⭐ SPOTS FOUND</span><span>${foundSpotCount} / ${getSelectedItemCount()}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></div></div>`;previousRankings=ranked.map(p=>p.name);}
 
@@ -448,9 +448,9 @@ function displaySpots(){
  renderRecentSpots();
 }
 
-function normaliseSearch(value){return value.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\\s+/g," ").trim();}
+function normaliseSearch(value){return value.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();}
 const spotAliases={
- "garbage truck":["rubbish truck","bin truck","garbo truck"],"cement truck":["concrete truck","mixer truck"],"caravan":["camper","camper trailer"],"digger":["excavator"],"motorbike":["motorcycle","bike"],"aeroplane":["airplane","plane"],"petrol station":["servo","service station","fuel station"],"mcdonald's":["mcdonalds","maccas"],"rainbow lorikeet":["lorikeet"],"magpie":["bird"],"seagull":["gull"],"kookaburra":[" kooka"],"woolworths":["woolies"],"post box":["mailbox","letterbox"],"traffic lights":["traffic light"],"sports oval":["oval","footy oval"],"swimming pool":["pool"],"blue truck":["truck"],"red truck":["truck"],"green truck":["truck"],"dog":["doggy","puppy"],"cat":["kitty","kitten"],"horse":["pony"],"rabbit":["bunny"],"lorry":["truck"]
+ "garbage truck":["rubbish truck","bin truck","garbo truck","lorry"],"cement truck":["concrete truck","mixer truck","lorry"],"caravan":["camper","camper trailer"],"digger":["excavator"],"motorbike":["motorcycle","bike"],"aeroplane":["airplane","plane"],"petrol station":["servo","service station","fuel station"],"mcdonald's":["mcdonalds","maccas"],"rainbow lorikeet":["lorikeet"],"red truck":["lorry"],"blue truck":["lorry"],"green truck":["lorry"],"magpie":["bird"],"seagull":["gull"],"kookaburra":[" kooka"],"woolworths":["woolies"],"post box":["mailbox","letterbox"],"traffic lights":["traffic light"],"sports oval":["oval","footy oval"],"swimming pool":["pool"],"blue truck":["truck"],"red truck":["truck"],"green truck":["truck"],"dog":["doggy","puppy"],"cat":["kitty","kitten"],"horse":["pony"],"rabbit":["bunny"],"lorry":["truck"]
 };
 function getAvailableSpots(){return spots.map((spot,index)=>({spot,index})).filter(x=>x.spot.spottedBy.length<players.length);}
 function searchSpots(query){
