@@ -117,9 +117,8 @@
 
   /* ---------- GAME ---------- */
   .game-header { text-align:center; padding:8px 4px 13px; }
-  .game-header .emoji { font-size:42px; }
-  .game-header h1 { margin:3px 0 2px; font-size:35px; font-weight:1000; text-transform:uppercase; letter-spacing:-1px; }
-  .game-header p { margin:0; color:var(--muted); font-weight:800; }
+  .game-brand-banner { display:block; width:100%; max-height:190px; aspect-ratio:2.45 / 1; object-fit:cover; object-position:center; border-radius:22px; box-shadow:0 7px 18px rgba(19,34,56,.12); }
+  .game-header p { margin:9px 0 0; color:var(--muted); font-weight:900; letter-spacing:1.2px; text-transform:uppercase; }
   .scoreboard { background:var(--navy); color:white; border-radius:24px; padding:17px; margin-bottom:15px; box-shadow:0 8px 20px rgba(19,34,56,.16); }
   .grand-prix { text-align:center;font-size:21px;font-weight:1000;text-transform:uppercase;margin-bottom:14px;letter-spacing:.5px; }
   .race-row { margin-bottom:13px; }
@@ -295,7 +294,7 @@
 
   <!-- GAME -->
   <section id="game-screen" style="display:none">
-    <div class="game-header"><div class="emoji">🚗💨</div><h1>SPOTTO!</h1><p>SPOT IT. TAP IT. SCORE IT!</p></div>
+    <div class="game-header"><img src="spotto-banner.png" alt="Road Trip Spotto — Mila and Jax" class="game-brand-banner"><p>SPOT IT • TAP IT • SCORE IT!</p></div>
     <div id="scoreboard"></div>
     <div id="spot-categories"></div>
     <button class="end-button" onclick="confirmEndGame()">🛑 END GAME NOW</button>
